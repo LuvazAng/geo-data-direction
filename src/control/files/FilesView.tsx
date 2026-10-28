@@ -103,7 +103,7 @@ export function FilesView({ centro, nav, target }: { centro: Centro; nav: Naviga
     });
   };
 
-  /** Un archivo: qué es y, a la vista, ver sus detalles o abrirlo en el editor; el resto, en «Más». */
+  /** Un archivo: qué es y, a la vista, ver sus detalles, abrirlo en el editor o descartar el caso; deshacer lo resuelto, en «Más». */
   const fileRow = (f: FileView) => {
     const resolved = reviewSnapshot?.resueltas.find((item) => item.traza.id === f.traza);
     const isReview = f.tipo === 'revision' && f.estado !== 'falta' && !!f.traza;
@@ -142,33 +142,28 @@ export function FilesView({ centro, nav, target }: { centro: Centro; nav: Naviga
               Abrir en el editor
             </button>
           )}
-          {(isReview || canUndo) && (
+          {isReview && (
+            <button
+              className="link"
+              disabled={!online}
+              onClick={() => window.confirm(`¿Descartar «${f.nombre}»?`) && resolveReviewAction(f.traza!, 'descartar')}
+              title="No se generará nada de este caso: deja de esperar revisión (se puede deshacer)"
+            >
+              Descartar
+            </button>
+          )}
+          {canUndo && (
             <Popover menu className="icon" icon="more" label="" title="Más acciones de este archivo" disabled={!online} align="left">
               {(close) => (
-                <>
-                  {isReview && (
-                    <button
-                      className="pop-item"
-                      onClick={() => {
-                        close();
-                        if (window.confirm(`¿Descartar «${f.nombre}»?`)) resolveReviewAction(f.traza!, 'descartar');
-                      }}
-                    >
-                      Descartar este caso
-                    </button>
-                  )}
-                  {canUndo && (
-                    <button
-                      className="pop-item"
-                      onClick={() => {
-                        close();
-                        if (window.confirm(`¿Deshacer la resolución de «${f.nombre}»?`)) resolveReviewAction(f.traza!, 'deshacer');
-                      }}
-                    >
-                      Deshacer la resolución
-                    </button>
-                  )}
-                </>
+                <button
+                  className="pop-item"
+                  onClick={() => {
+                    close();
+                    if (window.confirm(`¿Deshacer la resolución de «${f.nombre}»?`)) resolveReviewAction(f.traza!, 'deshacer');
+                  }}
+                >
+                  Deshacer la resolución
+                </button>
               )}
             </Popover>
           )}
@@ -177,7 +172,7 @@ export function FilesView({ centro, nav, target }: { centro: Centro; nav: Naviga
     );
   };
 
-  /** Lo que se puede hacer con un mapa: una acción a la vista (la que toca ahora) y el resto en «Más». */
+  /** Lo que se puede hacer con un mapa: lo que toca ahora a la vista (en uno sin itinerarios, evaluarlo o descartarlo) y deshacer, en «Más». */
   const mapActions = (mapId: string, titulo: string, status: string) => {
     const pendingForMap = reviewSnapshot?.pendientes.filter((item) => item.traza.mapa === mapId) ?? [];
     const resolvedForMap = reviewSnapshot?.resueltas.filter((item) => item.traza.mapa === mapId) ?? [];
@@ -220,27 +215,27 @@ export function FilesView({ centro, nav, target }: { centro: Centro; nav: Naviga
       );
     } else if (noItin) {
       primary = (
-        <button
-          className="primary compact"
-          disabled={!online || !noItin.archivoOriginal || !noItin.trazos.length}
-          onClick={() =>
-            noItin.archivoOriginal &&
-            nav.openReview(lote, noItin.archivoOriginal, noItin.trazos[0].traza, noItin.trazos[0].indice, [], noItin.trazos.length, noItin.trazos, mapId)
-          }
-          title="Abre el original en el editor: deja sólo los itinerarios (ida y regreso de cada dupla) y guarda; cada dupla va a su carpeta de la ruta"
-        >
-          Evaluar a mano
-        </button>
-      );
-      more.push(
-        <button
-          key="discard"
-          className="pop-item"
-          onClick={() => discardMap(mapId, titulo)}
-          title="No tiene nada que generar: deja de esperar revisión (se puede deshacer)"
-        >
-          Descartar el mapa
-        </button>,
+        <>
+          <button
+            className="primary compact"
+            disabled={!online || !noItin.archivoOriginal || !noItin.trazos.length}
+            onClick={() =>
+              noItin.archivoOriginal &&
+              nav.openReview(lote, noItin.archivoOriginal, noItin.trazos[0].traza, noItin.trazos[0].indice, [], noItin.trazos.length, noItin.trazos, mapId)
+            }
+            title="Abre el original en el editor: deja sólo los itinerarios (ida y regreso de cada dupla) y guarda; cada dupla va a su carpeta de la ruta"
+          >
+            Evaluar a mano
+          </button>
+          <button
+            className="danger compact"
+            disabled={!online}
+            onClick={() => discardMap(mapId, titulo)}
+            title="No tiene nada que generar: deja de esperar revisión (se puede deshacer)"
+          >
+            Descartar mapa
+          </button>
+        </>
       );
     } else if (status === 'DESCARTADO') {
       primary = (

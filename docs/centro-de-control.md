@@ -236,7 +236,7 @@ configurados. Más en [SECURITY.md](../SECURITY.md) y en [adr/0003-token-local-d
    **Volver a revisar** (en el encabezado de la ruta: la vuelve a clasificar sin red con los originales guardados; lo
    resuelto a mano se conserva), **Evaluar a mano** (abre el original en el editor; lo que dejes se registra agrupado por las
    duplas que muestra el editor, cada dupla en su carpeta en el lugar del mapa dentro de la ruta, y las de los mapas
-   siguientes se recorren) y **Descartar el mapa** (en el menú **⋯** del mapa; queda `DESCARTADO`: no se genera nada de él y la ruta deja de esperar su
+   siguientes se recorren) y **Descartar mapa** (botón rojo junto a *Evaluar a mano*; queda `DESCARTADO`: no se genera nada de él y la ruta deja de esperar su
    revisión). Todo se deshace desde la misma vista (`POST /api/revisiones/mapa`, `POST /api/revisiones/decidir-mapa`).
 5. Cerrar o recargar la página no detiene nada: las ejecuciones viven en el servidor.
 
