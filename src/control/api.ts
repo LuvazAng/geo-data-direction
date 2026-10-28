@@ -12,6 +12,8 @@ import type {
   ReviewItem,
   ReviewKind,
   ReviewSnapshot,
+  SiglasRequest,
+  SiglasResponse,
 } from '@protocol';
 
 // Cliente del servidor del centro de control (a través del proxy /api de Vite).
@@ -116,6 +118,8 @@ export const api = {
     generar: { traza: string; nombre: string; contenidoKml: string; dupla: number; nota?: string }[];
     descartar: { traza: string; nota?: string }[];
   }) => post<ReviewItem[]>('/revisiones/mapa', body),
+  /** Siglas de las colonias de un trazo para armar su nombre (catálogo, Qwen o regla). */
+  suggestSiglas: (body: SiglasRequest) => post<SiglasResponse>('/nombres/siglas', body),
   decideMap: (body: { lote: string; mapa: string; accion: 'descartar' | 'deshacer'; nota?: string }) =>
     post<{ decision: unknown }>('/revisiones/decidir-mapa', body),
   file: (lote: string, rel: string) => request<FileDetail>(`/archivo${qs({ lote, rel })}`),

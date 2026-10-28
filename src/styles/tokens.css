@@ -1,0 +1,111 @@
+/*
+ * Variables de color y tipografía. El tema oscuro es el predeterminado; el claro se activa con
+ * data-theme="claro" en <html> (src/ui/theme.ts). Los componentes sólo usan estas variables.
+ */
+:root {
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --radius: 8px;
+  --radius-sm: 6px;
+}
+
+:root,
+:root[data-theme='oscuro'] {
+  color-scheme: dark;
+
+  /* superficies, de la más baja a la más alta */
+  --bg: #0f172a; /* fondo de la app y del mapa */
+  --panel: #111827; /* columna lateral y centro de control */
+  --card: #182132; /* filas y secciones */
+  --card-hi: #1f2a3d; /* botones, menús, trazo seleccionado */
+  --hover: #273449;
+  --field: #0f172a; /* campos de texto */
+  --inset: #0f172a; /* zonas hundidas: código, registros */
+  --console: #0b1220;
+
+  /* separaciones: tenues entre secciones, sólidas en controles */
+  --line: rgba(148, 163, 184, 0.16);
+  --line-strong: rgba(148, 163, 184, 0.28);
+  --border: #334155;
+
+  /* texto */
+  --text: #e5e7eb;
+  --text-2: #cbd5e1;
+  --strong: #ffffff;
+  --muted: #94a3b8;
+  --faint: #64748b;
+
+  /* acento: --accent lleva texto blanco (5.2:1); --accent-hi marca selección y foco */
+  --accent: #2563eb;
+  --accent-hi: #3b82f6;
+  --on-accent: #ffffff;
+  --link: #60a5fa;
+  --focus: #7cb0ff;
+
+  /* estados: el relleno sirve para puntos y fondos, el texto para leer sobre la superficie */
+  --ok: #22c55e;
+  --ok-text: #86efac;
+  --warn: #f59e0b;
+  --warn-text: #fcd34d;
+  --end: #ef4444;
+  --err-text: #fca5a5;
+  --start: #22c55e;
+  --info-text: #93c5fd;
+  --violet: #a855f7;
+  --violet-text: #c4b5fd;
+  --edit: #facc15;
+  --on-edit: #111827;
+
+  /* capas flotantes */
+  --scrim: rgba(2, 6, 23, 0.7);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --map-chrome: rgba(17, 24, 39, 0.92);
+}
+
+:root[data-theme='claro'] {
+  color-scheme: light;
+
+  --bg: #e2e8f0;
+  --panel: #f8fafc;
+  --card: #ffffff;
+  --card-hi: #f1f5f9;
+  --hover: #e8eef5;
+  --field: #ffffff;
+  --inset: #f1f5f9;
+  --console: #f1f5f9;
+
+  --line: rgba(15, 23, 42, 0.12);
+  --line-strong: rgba(15, 23, 42, 0.22);
+  --border: #cbd5e1;
+
+  --text: #0f172a;
+  --text-2: #334155;
+  --strong: #020617;
+  --muted: #64748b;
+  --faint: #64748b;
+
+  --accent: #2563eb;
+  --accent-hi: #3b82f6;
+  --on-accent: #ffffff;
+  --link: #1d4ed8;
+  --focus: #1d4ed8;
+
+  --ok: #22c55e;
+  --ok-text: #15803d;
+  --warn: #f59e0b;
+  --warn-text: #b45309;
+  --end: #ef4444;
+  --err-text: #b91c1c;
+  --start: #22c55e;
+  --info-text: #1d4ed8;
+  --violet: #a855f7;
+  --violet-text: #6d28d9;
+  --edit: #facc15;
+  --on-edit: #111827;
+
+  --scrim: rgba(15, 23, 42, 0.45);
+  --shadow-md: 0 6px 20px rgba(15, 23, 42, 0.2);
+  --shadow-lg: 0 20px 60px rgba(15, 23, 42, 0.25);
+  --map-chrome: rgba(248, 250, 252, 0.94);
+}

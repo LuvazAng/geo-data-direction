@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { Coord } from '@core';
-import type { SnapView } from '../components/RouteCard';
+import type { SnapView } from '../routes/types';
 import type { OsmWay } from '../services/overpass';
 import { coordsOf, type Route } from '../services/route';
 import { fetchStreets, snapToStreets } from '../services/snap';

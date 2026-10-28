@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CONVERSACION_ANTERIOR, type ChatMessage, type Job, type LogEntry, type ServerEvent, type Snapshot } from '@protocol';
 import { ControlCenter } from '../../src/control/ControlCenter';
+import { QwenSettings } from '../../src/control/chat/ChatView';
 import { initialState, MAX_LOGS, reducer, type CenterState } from '../../src/control/state';
 import type { Centro } from '../../src/control/useCentro';
 
@@ -247,10 +248,14 @@ describe('interfaz (render en servidor, sin navegador)', () => {
     const html = renderToString(
       createElement(ControlCenter, { centro: centro(s), open: true, onClose: () => {}, onOpenFile: () => {}, onOpenReview: () => {} }),
     ).replace(/<!-- -->/g, '');
-    expect(html).toMatch(/Qwen responde/);
-    expect(html).toMatch(/＋ Nuevo chat/);
+    // los ajustes de Qwen están en un panel que se abre desde «Ajustes»: cerrado, sólo se ve su botón
+    expect(html).toMatch(/aria-expanded="false" aria-haspopup="true" title="Ajustes de Qwen en el chat"/);
+    expect(html).toMatch(/Nuevo chat/);
     expect(html).toMatch(/<option value="c-anterior" selected="">Mensajes anteriores · /);
-    expect(html).toMatch(/<option value="bajo" selected="">Bajo · hasta 256 tokens<\/option><option value="medio">Medio · hasta 1,024 tokens/);
+    // el panel de ajustes: Qwen responde y el nivel de razonamiento
+    const settings = renderToString(createElement(QwenSettings, { prefs: { conversar: true, esfuerzo: 'bajo' }, onChange: () => {} })).replace(/<!-- -->/g, '');
+    expect(settings).toMatch(/Qwen responde/);
+    expect(settings).toMatch(/<option value="bajo" selected="">Bajo · hasta 256 tokens<\/option><option value="medio">Medio · hasta 1,024 tokens/);
     expect(html).toMatch(/Razonamiento \(33 caracteres\) — en curso/);
     expect(html).toMatch(/razonando…/);
     expect(html).toMatch(/Detener/);

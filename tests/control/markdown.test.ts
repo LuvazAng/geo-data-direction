@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { Markdown, parseMarkdown } from '../../src/control/markdown';
+import { Markdown, parseMarkdown } from '../../src/control/chat/markdown';
 
 const html = (text: string, streaming = false) => renderToStaticMarkup(createElement(Markdown, { text, streaming }));
 

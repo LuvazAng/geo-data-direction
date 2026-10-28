@@ -1,0 +1,6 @@
+/* Estilos de la app, de lo general a lo particular. */
+@import './tokens.css';
+@import './base.css';
+@import './ui.css';
+@import './editor.css';
+@import './control.css';

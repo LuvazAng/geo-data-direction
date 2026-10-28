@@ -3,27 +3,28 @@ import { posix } from 'node:path';
 // Reglas de dependencia entre las capas de src/ (ver docs/architecture.md). Funciones puras sobre
 // rutas y texto: la prueba las aplica al código real y a ejemplos inventados.
 
-export type Layer = 'core' | 'protocol' | 'editor' | 'control' | 'shell' | 'orchestrator';
+export type Layer = 'core' | 'protocol' | 'ui' | 'editor' | 'control' | 'shell' | 'orchestrator';
 
 /** De qué capas puede importar cada una (además de sí misma). */
 const ALLOWED: Record<Layer, Layer[]> = {
   core: [],
   protocol: ['core'],
-  editor: ['core', 'protocol'],
-  control: ['core', 'protocol'],
-  shell: ['core', 'protocol', 'editor', 'control'],
+  ui: [],
+  editor: ['core', 'protocol', 'ui'],
+  control: ['core', 'protocol', 'ui'],
+  shell: ['core', 'protocol', 'ui', 'editor', 'control'],
   orchestrator: ['core', 'protocol'],
 };
 
 /** Capas que se usan con alias: sólo se importa su API pública (index.ts), nunca sus archivos. */
-const ALIASES: Record<string, Layer> = { '@core': 'core', '@protocol': 'protocol' };
+const ALIASES: Record<string, Layer> = { '@core': 'core', '@protocol': 'protocol', '@ui': 'ui' };
 
 /** Raíz de composición de la app web: junta el editor y el centro de control. */
 const SHELL_FILES = new Set(['src/App.tsx', 'src/main.tsx', 'src/vite-env.d.ts']);
 
 export function layerOf(path: string): Layer | null {
   if (SHELL_FILES.has(path)) return 'shell';
-  const m = /^src\/(core|protocol|editor|control|orchestrator)\//.exec(path);
+  const m = /^src\/(core|protocol|ui|editor|control|orchestrator)\//.exec(path);
   return m ? (m[1] as Layer) : null;
 }
 

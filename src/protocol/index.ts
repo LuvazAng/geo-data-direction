@@ -4,4 +4,5 @@
 export * from './events';
 export * from './centro';
 export * from './reviews';
+export * from './nombres';
 export * from './trace';

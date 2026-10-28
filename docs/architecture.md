@@ -22,17 +22,20 @@ Un solo paquete de Node organizado en capas. Cada capa sólo puede depender de l
                           ┌─────────────┐
                           │    core     │  dominio puro: KML, geometría, comparación, colonias
                           └─────────────┘
+
+      ui: piezas de interfaz sin lógica de trazos (iconos, cajón, tema…). Las usan editor, control y shell.
 ```
 
 ## Capas
 
 | Capa | Carpeta | Qué contiene | Puede importar de |
 | --- | --- | --- | --- |
-| core | `src/core` | Leer y escribir KML/KMZ, geometría, comparación de trazos, organización de duplas, colonias | nada |
+| core | `src/core` | Leer y escribir KML/KMZ, geometría, comparación de trazos, organización de duplas, colonias, nombres de archivo (siglas y evaluación) | nada |
 | protocol | `src/protocol` | Tipos y constantes que comparten el servidor y las pantallas (eventos, acciones, revisiones) | core |
-| editor | `src/editor` | App del editor de trayectos (componentes, hooks, servicios, estado puro) | core, protocol |
-| control | `src/control` | Pantalla del centro de control | core, protocol |
-| shell | `src/App.tsx`, `src/main.tsx` | Composición de las dos pantallas | editor, control, core, protocol |
+| ui | `src/ui` | Piezas de interfaz compartidas por las dos pantallas, sin lógica de dominio: iconos, cajón, filas de herramientas, panel flotante o menú, sección plegable, término con ayuda, tema claro/oscuro | nada |
+| editor | `src/editor` | App del editor de trayectos: `panel/`, `routes/`, `organize/`, `tools/`, `map/` (componentes), `hooks/`, `services/` y `state/` (reglas puras) | core, protocol, ui |
+| control | `src/control` | Pantalla del centro de control: `chat/`, `queue/`, `files/`, `logs/`, `details/` y su estado | core, protocol, ui |
+| shell | `src/App.tsx`, `src/main.tsx` | Composición de las dos pantallas | editor, control, core, protocol, ui |
 | orchestrator | `src/orchestrator` | Todo lo que corre en Node: orquestador, servidor del centro y CLI | core, protocol |
 
 Reglas que verifica `tests/architecture/architecture.test.ts` (a partir de `rules.ts`, que son funciones puras probadas
@@ -40,8 +43,9 @@ con ejemplos inventados):
 
 - `core` no importa de ninguna otra capa ni de módulos de Node; `protocol` sólo de `core`.
 - `editor` y `control` no se importan entre sí ni importan del orquestador; corren en el navegador y no usan `node:*`.
-- `core` y `protocol` se importan con su alias (`@core`, `@protocol`) y sólo por su API pública (`index.ts`), nunca por
-  sus archivos internos.
+- `ui` no importa de ninguna otra capa; `editor` y `control` la comparten así sin importarse entre sí.
+- `core`, `protocol` y `ui` se importan con su alias (`@core`, `@protocol`, `@ui`) y sólo por su API pública
+  (`index.ts`), nunca por sus archivos internos.
 - Dentro del orquestador, una carpeta sólo importa de las de abajo (o de sí misma):
 
 ```

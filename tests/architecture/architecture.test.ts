@@ -20,7 +20,7 @@ describe('arquitectura: dependencias entre capas', () => {
   it('el código de src/ cumple las reglas', () => {
     const files = sourcesUnder('src');
     // que el recorrido no esté vacío: si no leyera nada, la prueba pasaría sin verificar nada
-    const layers = ['src/core/', 'src/protocol/', 'src/editor/', 'src/control/', 'src/orchestrator/'];
+    const layers = ['src/core/', 'src/protocol/', 'src/ui/', 'src/editor/', 'src/control/', 'src/orchestrator/'];
     for (const layer of layers) expect(files.filter((f) => f.path.startsWith(layer)).length, layer).toBeGreaterThan(3);
     expect(files.map((f) => f.path)).toContain('src/App.tsx');
     expect(violations(files)).toEqual([]);
@@ -40,6 +40,15 @@ describe('arquitectura: dependencias entre capas', () => {
       expect(found(file('src/control/a.ts', '../editor/App'))).toContain('control no puede importar de editor');
       expect(found(file('src/editor/a.ts', '../orchestrator/config'))).toContain('editor no puede importar de orchestrator');
       expect(found(file('src/control/a.ts', '../../src/orchestrator/config'))).toContain('control no puede importar de orchestrator');
+    });
+
+    it('ui no importa de ninguna otra capa y se usa con su alias', () => {
+      expect(found(file('src/ui/a.tsx', '@core'))).toContain('ui no puede importar de core');
+      expect(found(file('src/ui/a.tsx', '../editor/Editor'))).toContain('ui no puede importar de editor');
+      expect(found(file('src/ui/a.tsx', '../control/api'))).toContain('ui no puede importar de control');
+      expect(found(file('src/editor/a.ts', '../ui/icons'))).toContain("se importa con '@ui'");
+      expect(found(file('src/control/a.ts', '@ui/icons'))).toContain("usa '@ui'");
+      expect(found(file('src/orchestrator/io/a.ts', '@ui'))).toContain('orchestrator no puede importar de ui');
     });
 
     it('el orquestador no importa de la interfaz', () => {
@@ -64,9 +73,10 @@ describe('arquitectura: dependencias entre capas', () => {
 
   describe('permite lo que corresponde', () => {
     it.each([
-      file('src/editor/components/a.tsx', '@core', '@protocol', '../services/geocode', 'react'),
-      file('src/control/a.ts', '@core', '@protocol', './api'),
-      file('src/App.tsx', './editor/components/MapView', './control/ControlCenter', '@core', './styles.css'),
+      file('src/editor/routes/a.tsx', '@core', '@protocol', '@ui', '../services/geocode', 'react'),
+      file('src/control/a.ts', '@core', '@protocol', '@ui', './api'),
+      file('src/ui/a.tsx', './icons', 'react'),
+      file('src/App.tsx', './editor/map/MapView', './control/ControlCenter', '@core', './styles.css'),
       file('src/orchestrator/pipeline/a.ts', '../domain/classify', '../io/store', '../llm/llm', '../config', '@core', '@protocol', 'node:fs'),
       file('src/orchestrator/server/a.ts', '../pipeline/pipeline', '../errors', 'node:http'),
       file('src/protocol/a.ts', '@core', './events'),

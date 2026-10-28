@@ -148,6 +148,37 @@ export function coloniasAlong(coords: Coord[], index: ColoniaIndex, minM = MIN_C
   return { pasos, fueraM, totalM };
 }
 
+/** Cuánto del principio (o del final) del trazo se mira si su extremo no cae dentro de ninguna colonia. */
+const ENDPOINT_WINDOW_M = 400;
+
+/** Los primeros metros del trazo: los vértices hasta juntar `meters` metros. */
+function headOf(coords: Coord[], meters: number): Coord[] {
+  const { toXY } = projector(coords[0][1]);
+  const head = [coords[0]];
+  let acc = 0;
+  for (let i = 1; i < coords.length && acc < meters; i++) {
+    const [ax, ay] = toXY(coords[i - 1]);
+    const [bx, by] = toXY(coords[i]);
+    acc += Math.hypot(bx - ax, by - ay);
+    head.push(coords[i]);
+  }
+  return head;
+}
+
+/** La colonia en la que empieza el trazo: la que contiene su primer punto o, si cae fuera de todas, en la que más recorre al empezar. */
+function coloniaAtStart(coords: Coord[], index: ColoniaIndex): ColoniaProps | null {
+  const hit = index.at(coords[0]);
+  if (hit.length) return hit[0];
+  const near = coloniasAlong(headOf(coords, ENDPOINT_WINDOW_M), index, 0);
+  return [...near.pasos].sort((a, b) => b.metros - a.metros)[0]?.colonia ?? null;
+}
+
+/** La colonia donde empieza y la colonia donde termina el trazo (en el sentido en que va); null si ese extremo no cae en ninguna. */
+export function endpointColonias(coords: Coord[], index: ColoniaIndex): { inicio: ColoniaProps | null; final: ColoniaProps | null } {
+  if (coords.length < 2) return { inicio: null, final: null };
+  return { inicio: coloniaAtStart(coords, index), final: coloniaAtStart([...coords].reverse(), index) };
+}
+
 /** Nombre con su tipo («BARRIO SAN JUAN»), sin repetirlo si el nombre ya lo trae («AMPLIACION LAZARO CARDENAS»). */
 export function coloniaNombre(c: ColoniaProps): string {
   const tipo = normalize(c.tipo);

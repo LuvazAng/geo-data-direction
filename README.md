@@ -7,7 +7,8 @@ los clasifica, les pone nombre y genera un reporte.
 Todo corre en tu equipo. Tiene tres partes que se usan juntas o por separado:
 
 - **Editor de trayectos**: app web para abrir KML/KMZ, ver el sentido en el mapa, comparar trayectos, invertirlos,
-  editar su geometría y exportar los archivos ya ordenados. Guía: [docs/editor.md](docs/editor.md).
+  editar su geometría y exportar los archivos ya ordenados. Guía: [docs/editor.md](docs/editor.md); su diseño, en
+  [docs/design.md](docs/design.md).
 - **Orquestador**: programa de línea de comandos que lee un sitio de mapas, descarga los KML, decide origen, destino y
   sentido de cada trazo con evidencias (geometría, localidades del INEGI, nombres y, opcionalmente, un modelo de IA
   local) y escribe los resultados con su reporte. Guía: [docs/orquestador.md](docs/orquestador.md).
@@ -63,6 +64,7 @@ ejemplo está en [.env.example](.env.example). Cada lote (zona) se describe en `
 src/
   core/          Dominio puro compartido: KML, geometría, comparación de trazos, colonias
   protocol/      Contrato entre el servidor y las pantallas: tipos y constantes
+  ui/            Piezas de interfaz compartidas (iconos, cajón, tema claro/oscuro)
   editor/        App del editor de trayectos
   control/       Pantalla del centro de control
   orchestrator/  Node: dominio, lectura de fuentes, pipeline, IA local, servidor y CLI

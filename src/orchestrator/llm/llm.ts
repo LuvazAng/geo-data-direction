@@ -201,7 +201,7 @@ class IdleError extends Error {}
 // ---------------------------------------------------------------------------
 
 export interface ModelActivity {
-  origen: 'orquestador' | 'chat' | 'pi';
+  origen: 'orquestador' | 'chat' | 'pi' | 'editor';
   tarea: string;
   modelo: string;
   desde: string;

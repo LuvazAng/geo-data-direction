@@ -5,3 +5,4 @@ export * from './geometry';
 export * from './analysis';
 export * from './organize';
 export * from './colonias';
+export * from './naming';

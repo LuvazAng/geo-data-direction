@@ -12,7 +12,7 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "types": [],
-    "paths": { "@core": ["./src/core/index.ts"], "@protocol": ["./src/protocol/index.ts"] }
+    "paths": { "@core": ["./src/core/index.ts"], "@protocol": ["./src/protocol/index.ts"], "@ui": ["./src/ui/index.ts"] }
   },
-  "include": ["src/editor", "src/control", "src/core", "src/protocol", "src/App.tsx", "src/main.tsx", "src/vite-env.d.ts", "tools", "vite.config.ts"]
+  "include": ["src/editor", "src/control", "src/core", "src/protocol", "src/ui", "src/App.tsx", "src/main.tsx", "src/vite-env.d.ts", "tools", "vite.config.ts"]
 }

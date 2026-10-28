@@ -5,6 +5,7 @@ import type { Center } from './center';
 import { ActionError } from '../errors';
 import { BadPath, fileContent, fileDetail, filesSnapshot, loteData } from './views';
 import { decideMap, evaluateMap, resolveReview, resolveReviews, reviewSnapshot, undoMapReviews } from '../pipeline/reviews';
+import { suggestSiglas } from './nombres';
 
 // API del centro de control. Sólo escucha en 127.0.0.1 y cada petición debe:
 //  - llegar con el token local (lo agrega el proxy de Vite; el navegador nunca lo ve),
@@ -14,6 +15,8 @@ import { decideMap, evaluateMap, resolveReview, resolveReviews, reviewSnapshot, 
 
 const MAX_BODY = 64 * 1024;
 const MAX_REVIEW_BODY = 64 * 1024 * 1024;
+/** Lugares que se pueden abreviar en una petición (un trazo y su pareja usan pocos). */
+const MAX_LUGARES = 12;
 
 class HttpError extends Error {
   constructor(
@@ -298,6 +301,34 @@ export function createCenterServer(center: Center, token: string): Server {
           });
           center.refreshRoutes(lote.lote);
           return send(res, 200, itemsDeshechos);
+        }
+        if (p === '/api/nombres/siglas') {
+          const lote = center.jobs.lote(String(body.lote ?? ''));
+          if (typeof body.traza !== 'string' || !body.traza) throw new HttpError(400, 'Falta el trazo');
+          if (!Array.isArray(body.lugares) || body.lugares.length === 0 || body.lugares.length > MAX_LUGARES) {
+            throw new HttpError(400, `Se requieren de 1 a ${MAX_LUGARES} lugares`);
+          }
+          const lugares = body.lugares.map((value) => {
+            const item = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>;
+            if (typeof item.nombre !== 'string' || !item.nombre.trim() || item.nombre.length > 120) {
+              throw new HttpError(400, 'Cada lugar requiere un nombre de hasta 120 caracteres');
+            }
+            return {
+              nombre: item.nombre.trim(),
+              tipo: typeof item.tipo === 'string' ? item.tipo.slice(0, 60) : undefined,
+              municipio: typeof item.municipio === 'string' ? item.municipio.slice(0, 60) : undefined,
+            };
+          });
+          const r = await suggestSiglas(lote, center.qwen, { lote: lote.lote, traza: body.traza, lugares });
+          const detalle = r.lugares.map((l) => `${l.nombre} → ${l.siglas} (${l.fuente})`).join('; ');
+          center.logs.add({
+            nivel: r.ia.error ? 'WARN' : 'INFO',
+            componente: 'QWEN',
+            lote: lote.lote,
+            mensaje: `Siglas de ${r.ruta.codigo}: ${detalle}${r.ia.error ? ` · Qwen: ${r.ia.error}` : ''}`,
+            duracionMs: r.ia.ms,
+          });
+          return send(res, 200, r);
         }
         if (p === '/api/cola/orden') {
           center.jobs.reorder(Array.isArray(body.ids) ? body.ids.map(String) : (null as never));

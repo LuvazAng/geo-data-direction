@@ -1,4 +1,5 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import type { SiglasRequest, SiglasResponse } from '@protocol';
 import type { SourceFile } from '../services/files';
 import type { Route } from '../services/route';
 import { evaluateMapRequest, nothingLeftMessage, resolveReviewsRequest, reviewDoneMessage, splitPending, type ReviewEditor } from '../state/review';
@@ -8,6 +9,8 @@ import type { Notify } from './useNotice';
 export interface ReviewServer {
   evaluateMap: (request: ReturnType<typeof evaluateMapRequest>) => Promise<unknown>;
   resolveReviews: (request: ReturnType<typeof resolveReviewsRequest>) => Promise<unknown>;
+  /** Siglas de las colonias para el nombre de un trazo (catálogo del lote, Qwen o la regla). */
+  suggestSiglas: (request: SiglasRequest) => Promise<SiglasResponse>;
 }
 
 interface Deps {

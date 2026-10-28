@@ -155,6 +155,11 @@ variantes distintas; las ramas ambiguas y las variantes se conservan separadas.
   tiene más de una dupla entre los mismos lugares; `"siempre"` la agrega siempre.
 - **Repetidos**: `colision: "sufijo"` agrega `-2`, `-3`…; `"revision"` los manda a revisión.
 - Sin origen o destino seguros **no se genera nombre**: el trazo queda en revisión con un nombre *propuesto*.
+- **A mano en el editor**: al resolver un caso o evaluar un mapa, *Sugerir nombre* arma el mismo patrón con la colonia de
+  inicio y la de final del trazo (INE) y compara el nombre original con la propuesta (6 criterios en `src/core/naming.ts`:
+  forma, caracteres, código de ruta, siglas de 2 a 6, lugares y único). Las siglas salen del catálogo anterior, de Qwen
+  (sólo propone y el servidor valida; «la IA no decide nombres») o de la regla (`abbreviatePlace`: `Tierra Larga → TLARG`,
+  `12 de Octubre → 12OCT`). Ver [editor.md](editor.md#sugerir-nombre-al-resolver-un-mapa).
 
 ## 7. Reporte
 

@@ -7,4 +7,5 @@ const at = (path: string) => fileURLToPath(new URL(`../${path}`, import.meta.url
 export const aliases = [
   { find: /^@core$/, replacement: at('src/core/index.ts') },
   { find: /^@protocol$/, replacement: at('src/protocol/index.ts') },
+  { find: /^@ui$/, replacement: at('src/ui/index.ts') },
 ];

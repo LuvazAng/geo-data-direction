@@ -1,0 +1,186 @@
+/* Base común al editor y al centro de control: reinicio, tipografía, botones, campos y foco. */
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.3;
+  font-weight: 600;
+}
+h1 {
+  font-size: 18px;
+}
+h2 {
+  font-size: 15px;
+}
+h3 {
+  font-size: 14px;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--card-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent-hi);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+/* acción discreta: sólo texto (y icono) hasta que se le pasa el cursor */
+button.quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+}
+button.quiet:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: transparent;
+}
+button.icon {
+  background: none;
+  border: none;
+  font-size: 16px;
+  padding: 2px 6px;
+  color: var(--muted);
+}
+button.icon:hover:not(:disabled) {
+  color: var(--text);
+}
+button.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--link);
+  text-decoration: underline;
+}
+button.danger {
+  background: color-mix(in srgb, var(--end) 15%, transparent);
+  border-color: var(--end);
+  color: var(--err-text);
+}
+button.danger:hover:not(:disabled) {
+  border-color: var(--err-text);
+}
+/* botón pequeño para filas densas */
+button.compact {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+/* interruptor de herramienta encendido (editar vértices) */
+button.active {
+  background: var(--edit);
+  border-color: var(--edit);
+  color: var(--on-edit);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+}
+input[type='range'] {
+  padding: 0;
+  border: none;
+  background: none;
+  accent-color: var(--accent);
+}
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+/* el foco del teclado siempre se ve */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-offset: 0;
+}
+
+kbd {
+  font: 11px var(--mono);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row.inline {
+  display: inline-flex;
+  margin-left: 6px;
+}
+.spacer {
+  flex: 1;
+}
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 12px;
+}
+.ok-text {
+  color: var(--ok-text);
+}
+.warn-text {
+  color: var(--warn-text);
+}
+.err-text {
+  color: var(--err-text);
+}
+.check {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 8px;
+  cursor: pointer;
+}

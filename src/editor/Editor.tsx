@@ -1,23 +1,35 @@
-import { useCallback, useMemo, useState, type DragEvent, type ReactNode } from 'react';
-import { MapView, type Basemap } from './components/MapView';
-import { RouteCard, type ColoniasView, type RouteActions } from './components/RouteCard';
-import { InvertSuggestions, PairsSection } from './components/panel/Comparison';
-import { GroupNav } from './components/panel/GroupNav';
-import { LoadErrors } from './components/panel/LoadErrors';
-import { DropOverlay, EditBanner, EmptyState } from './components/panel/MapOverlays';
-import { MapToolbar } from './components/panel/MapToolbar';
-import { NoticeToast } from './components/panel/NoticeToast';
-import { PanelFooter } from './components/panel/PanelFooter';
-import { PanelHeader } from './components/panel/PanelHeader';
-import { ReviewBanner } from './components/panel/ReviewBanner';
-import { OrgPanel } from './components/OrgPanel';
-import { FolderTree, allFolders } from './components/FolderTree';
+import { useCallback, useEffect, useMemo, useState, type DragEvent, type ReactNode } from 'react';
+import { Fold, useTheme } from '@ui';
+import type { Basemap } from './map/basemap';
+import { MapView } from './map/MapView';
+import { RouteRow } from './routes/RouteRow';
+import { NameAssistant } from './routes/NameAssistant';
+import { RouteInspector } from './routes/RouteInspector';
+import type { ColoniasView, RouteActions, ShapeToolId } from './routes/types';
+import { InvertSuggestions, PairsSection } from './organize/Comparison';
+import { GroupNav } from './panel/GroupNav';
+import { LoadErrors } from './panel/LoadErrors';
+import { DropOverlay, EditBanner } from './map/MapOverlays';
+import { EditBar } from './map/EditBar';
+import { MapToolbar } from './map/MapToolbar';
+import { NoticeToast } from './panel/NoticeToast';
+import { PanelFooter } from './panel/PanelFooter';
+import { PanelHeader } from './panel/PanelHeader';
+import { ReviewBanner } from './panel/ReviewBanner';
+import { Welcome } from './panel/Welcome';
+import { OrgPanel } from './organize/OrgPanel';
+import { FolderTree, allFolders } from './organize/FolderTree';
+import { ToolsDrawer } from './tools/ToolsDrawer';
+import { buildTools } from './tools/tools';
 import { baseCoords, coordsOf, type Route } from './services/route';
-import { coloniasAlong, simplify } from '@core';
+import { supportsFsAccess } from './services/files';
+import { coloniasAlong, parseName, simplify } from '@core';
 import { restorePatch } from './state/routes';
 import { duplasWithLetters, splitPending, type ReviewEditor } from './state/review';
+import type { ToolFacts } from './state/tools';
 import { useColonias } from './hooks/useColonias';
 import { useFileSession } from './hooks/useFileSession';
+import { useNameSuggestions } from './hooks/useNameSuggestions';
 import { useNotice } from './hooks/useNotice';
 import { useOrganization } from './hooks/useOrganization';
 import { useRouteEditing } from './hooks/useRouteEditing';
@@ -58,7 +70,7 @@ interface Props {
   renderControl: (editor: EditorBridge) => ReactNode;
 }
 
-/** El editor de trayectos: mapa, tarjetas de cada trazo, organización, carpetas y guardado. */
+/** El editor de trayectos: mapa, lista de trazos con su inspector, herramientas, organización, carpetas y guardado. */
 export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseControl, server, renderControl }: Props) {
   const { routes, setRoutes, selectedId, editId, setEditId, fit, patchRoute, select, toggleEdit, fitTo, load, invert, setGeometry, undo, byId } =
     useRouteList();
@@ -68,6 +80,16 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
   /** Opacidad general de los trazos en el mapa. */
   const [routesOpacity, setRoutesOpacity] = useState(1);
   const [reviewEditor, setReviewEditor] = useState<ReviewEditor | null>(null);
+  /** El cajón de herramientas, abierto en su lista o directamente en los atajos. */
+  const [drawer, setDrawer] = useState<'herramientas' | 'atajos' | null>(null);
+  /** Trazo en el que está abierta la herramienta de simplificar (las otras dos son `editId` y el ajuste a calles). */
+  const [simplifyId, setSimplifyId] = useState<string | null>(null);
+  /** Se está escribiendo el nombre de una carpeta nueva. */
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [theme, setTheme] = useTheme();
+  /** El selector de archivos (oculto); se guarda como estado para poder abrirlo desde botones y desde el cajón. */
+  const [fileInput, setFileInput] = useState<HTMLInputElement | null>(null);
+  const openFilesDialog = () => fileInput?.click();
   const { colonias, showColonias, setShowColonias } = useColonias();
   const setCenterOpen = useCallback((open: boolean) => (open ? onOpenControl() : onCloseControl()), [onOpenControl, onCloseControl]);
   const { notice, notify, runNoticeAction, dropUndo } = useNotice();
@@ -134,6 +156,18 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
 
   const { snapId, setSnapDist, snapView, snapPreview, startSnap, applySnap, cancelSnap } = useSnap({ byId, selectedId, setGeometry, notify });
 
+  // Una sola herramienta de forma abierta a la vez: al activar una (también con la tecla E) se cierran las otras
+  useEffect(() => {
+    if (!editId) return;
+    cancelSnap();
+    setSimplifyId(null);
+  }, [editId, cancelSnap]);
+  useEffect(() => {
+    if (simplifyId && simplifyId !== selectedId) setSimplifyId(null);
+  }, [simplifyId, selectedId]);
+
+  const toolOf = (id: string): ShapeToolId | null => (id === editId ? 'edit' : id === snapId ? 'snap' : id === simplifyId ? 'simplify' : null);
+
   // ------------------------------------------------------------------ guardar / exportar
 
   const { contentFor, saveOne, saveAll, saveAllAndNext, exportFoldered } = useSaving({
@@ -163,31 +197,42 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
     server,
   });
 
+  const nameAssistant = useNameSuggestions({
+    reviewEditor,
+    routes,
+    selectedId,
+    duplaOf,
+    index: colonias.index,
+    patchRoute,
+    notify,
+    server,
+  });
+
   const actionsFor = (r: Route): RouteActions => ({
     select: () => select(r.id),
     invert: () => invert(r.id),
     toggle: () => patchRoute(r.id, { visible: !r.visible }),
-    setOpacity: (opacity) => patchRoute(r.id, { opacity }),
     zoom: () => fitTo([r.id]),
     rename: (outName) => patchRoute(r.id, { outName, saved: undefined }),
     setFolder: (folder) => moveToFolder(r.id, folder),
     save: () => saveOne(r),
     retryOneways: () => checkOneways(r.id, baseCoords(r)),
     simplify: (tol) => setGeometry(r.id, simplify(coordsOf(r), tol)),
-    snapStart: () => startSnap(r.id),
+    simplifyClose: () => setSimplifyId(null),
     snapDistance: setSnapDist,
     snapApply: applySnap,
     snapCancel: cancelSnap,
     toggleEdit: () => toggleEdit(r.id),
     undo: () => undo(r.id),
     restore: () => patchRoute(r.id, restorePatch),
+    suggestName: reviewEditor && colonias.index ? nameAssistant.open : undefined,
     remove: () => removeRoute(r.id),
   });
 
   // ------------------------------------------------------------------ atajos
 
   useShortcuts({
-    disabled: controlOpen,
+    disabled: controlOpen || drawer !== null,
     routes,
     selectedId,
     hasNoticeAction: !!notice?.action,
@@ -217,11 +262,95 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
     notify(`Abierto en el editor: ${file.name}`);
   };
 
-  // ------------------------------------------------------------------ UI
+  // ------------------------------------------------------------------ herramientas
 
   const nonAlt = routes.filter((r) => !r.alt);
   const showOrg = !!org && (nonAlt.length > 2 || Object.keys(org.relations).length > 0);
   const hasDir = routes.some((r) => r.source.dir || r.source.baseDir);
+  const hasNext = groups.length > 0 && groupIndex < groups.length - 1;
+  const canPickFolder = supportsFsAccess();
+  const selected = selectedId ? byId[selectedId] : undefined;
+
+  const facts: ToolFacts = {
+    hasRoutes: routes.length > 0,
+    hasSelection: !!selected,
+    reviewing: !!reviewEditor,
+    selectedNameFormatOk: !!selected && !!parseName(selected.outName),
+    selectedEdited: !!selected?.edited,
+    selectedHasHistory: !!selected?.history?.length,
+    invertReasons: suggestions.find((s) => s.route.id === selectedId)?.reasons ?? [],
+    canPickFolder,
+    hasGroups: groups.length > 0,
+    hasNext,
+    canSplit: showOrg,
+    hasLooseRoutes: routes.some((r) => !r.folder),
+    coloniasReady: !!colonias.index,
+    coloniasError: colonias.error,
+  };
+
+  const onSelected = (act: (id: string) => void) => () => {
+    if (selectedId) act(selectedId);
+  };
+  const tools = buildTools({
+    facts,
+    reviewing: !!reviewEditor,
+    hasDir,
+    tolerance,
+    setTolerance,
+    basemap,
+    setBasemap,
+    lanes,
+    setLanes,
+    showColonias,
+    setShowColonias,
+    routesOpacity,
+    setRoutesOpacity,
+    active: {
+      edit: !!selectedId && editId === selectedId,
+      simplify: !!selectedId && simplifyId === selectedId,
+      snap: !!selectedId && snapId === selectedId,
+    },
+    selectedOpacity: selected?.opacity ?? 1,
+    setSelectedOpacity: (opacity) => selectedId && patchRoute(selectedId, { opacity }),
+    theme,
+    setTheme,
+    run: {
+      openFolder: () => void pickFolder(),
+      openFiles: openFilesDialog,
+      saveAll: () => void saveAll(),
+      saveAllAndNext: () => void saveAllAndNext(),
+      saveReview: () => void saveReview(),
+      exportKml: () => void exportFoldered(),
+      invert: onSelected(invert),
+      edit: onSelected((id) => {
+        setSimplifyId(null);
+        cancelSnap();
+        toggleEdit(id);
+      }),
+      // pulsar una herramienta que ya está abierta la cierra
+      simplify: onSelected((id) => {
+        setEditId(null);
+        cancelSnap();
+        setSimplifyId((current) => (current === id ? null : id));
+      }),
+      snap: onSelected((id) => {
+        setEditId(null);
+        setSimplifyId(null);
+        if (snapId === id) cancelSnap();
+        else startSnap(id);
+      }),
+      restore: onSelected((id) => patchRoute(id, restorePatch)),
+      undo: onSelected(undo),
+      zoom: onSelected((id) => fitTo([id])),
+      suggestName: nameAssistant.open,
+      fitAll: () => fitTo(routes.map((r) => r.id)),
+      newFolder: () => setCreatingFolder(true),
+      splitDuplas: assignFolders,
+    },
+  });
+
+  // ------------------------------------------------------------------ UI
+
   const folders = allFolders(routes, extraFolders);
   const reviewRemoved = reviewEditor ? splitPending(reviewEditor, routes).removed : [];
   // duplas que se registrarán al evaluar el mapa a mano, en orden, con las letras de sus trazos
@@ -231,23 +360,32 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
 
   const renderRoute = (r: Route) => {
     const best = org?.relations[r.id]?.[0];
+    const on = actionsFor(r);
+    const isSelected = r.id === selectedId;
+    const altLabel = r.alt && `Alterna: ${byId[r.alt.mainId]?.letter ?? '?'} + ${byId[r.alt.shortId]?.letter ?? '?'}`;
     return (
-      <RouteCard
+      <RouteRow
         key={r.id}
         route={r}
-        manualReview={!!reviewEditor}
-        selected={r.id === selectedId}
-        editing={r.id === editId}
-        folders={folders}
+        selected={isSelected}
         role={org?.role[r.id]}
         dupla={duplaOf[r.id]}
         relation={best && { mainLetter: byId[best.mainId]?.letter ?? '?', kind: best.kind, needsReverse: best.needsReverse }}
-        altLabel={r.alt && `Alterna: ${byId[r.alt.mainId]?.letter ?? '?'} + ${byId[r.alt.shortId]?.letter ?? '?'}`}
-        hint={hints[r.id]}
-        snap={r.id === snapId ? snapView : undefined}
-        colonias={r.id === selectedId ? coloniasView : undefined}
-        on={actionsFor(r)}
-      />
+        altLabel={altLabel || undefined}
+        on={on}
+      >
+        <RouteInspector
+          route={r}
+          folders={folders}
+          tool={toolOf(r.id)}
+          manualReview={!!reviewEditor}
+          hint={hints[r.id]}
+          snap={r.id === snapId ? snapView : undefined}
+          colonias={coloniasView}
+          assistant={isSelected && nameAssistant.view ? <NameAssistant view={nameAssistant.view} on={nameAssistant.on} /> : undefined}
+          on={on}
+        />
+      </RouteRow>
     );
   };
 
@@ -283,71 +421,104 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
           showColonias={showColonias}
           coloniasRuta={selectedColonias}
         />
-        <MapToolbar
-          basemap={basemap}
-          onBasemap={setBasemap}
-          lanes={lanes}
-          onLanes={setLanes}
-          coloniasError={colonias.error}
-          coloniasReady={!!colonias.index}
-          showColonias={showColonias}
-          onShowColonias={setShowColonias}
-          opacity={routesOpacity}
-          onOpacity={setRoutesOpacity}
-        />
+        <div className="map-top">
+          {routes.length > 0 && <EditBar tools={tools} selected={selected} />}
+          <MapToolbar
+            basemap={basemap}
+            onBasemap={setBasemap}
+            lanes={lanes}
+            onLanes={setLanes}
+            coloniasError={colonias.error}
+            coloniasReady={!!colonias.index}
+            showColonias={showColonias}
+            onShowColonias={setShowColonias}
+            opacity={routesOpacity}
+            onOpacity={setRoutesOpacity}
+          />
+        </div>
         {editId && byId[editId] && <EditBanner letter={byId[editId].letter} />}
-        {routes.length === 0 && !busy && <EmptyState />}
         {dragging && <DropOverlay />}
       </main>
 
       {renderControl({ openFile, openReview })}
 
       <aside className="panel">
+        <input
+          ref={setFileInput}
+          type="file"
+          accept=".kml,.kmz"
+          multiple
+          hidden
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []).map((file) => ({ file, path: file.name }));
+            e.target.value = '';
+            if (files.length) void openFiles(files);
+          }}
+        />
         <PanelHeader
           controlRunning={controlRunning}
           onOpenControl={onOpenControl}
           busy={busy}
-          onPickFolder={pickFolder}
-          onOpenFiles={(files) => void openFiles(files)}
-          tolerance={tolerance}
-          onTolerance={setTolerance}
+          hasRoutes={routes.length > 0}
+          canPickFolder={canPickFolder}
+          onPickFolder={() => void pickFolder()}
+          onOpenFiles={openFilesDialog}
+          onOpenTools={() => setDrawer('herramientas')}
         />
 
         {groups.length > 0 && <GroupNav groups={groups} groupIndex={groupIndex} done={done} busy={busy} onGo={goToGroup} />}
 
         <div className="panel-body">
-          {reviewEditor && <ReviewBanner review={reviewEditor} routeCount={routes.length} removed={reviewRemoved} duplas={reviewDuplas} />}
-          {busy && <p className="muted">Cargando…</p>}
-
-          <PairsSection pairs={pairs} tolerance={tolerance} onInvert={invert} />
-
-          <InvertSuggestions suggestions={suggestions} onInvert={invert} />
-
-          {showOrg && (
-            <OrgPanel
-              org={org!}
-              routes={routes}
-              createdAlts={createdAlts}
-              choice={altChoice}
-              relationFor={relationFor}
-              onChoose={chooseMain}
-              onVertex={setVertex}
-              onCreateAlt={createAlternative}
-              onAssignFolders={assignFolders}
-              onSelect={select}
+          {routes.length === 0 && !busy && (
+            <Welcome
+              busy={busy}
+              canPickFolder={canPickFolder}
+              onPickFolder={() => void pickFolder()}
+              onOpenFiles={openFilesDialog}
+              onOpenTools={() => setDrawer('herramientas')}
             />
           )}
+          {busy && (
+            <p className="muted loading-line">
+              <span className="spinner" aria-hidden="true" /> Abriendo tus rutas…
+            </p>
+          )}
+
+          {reviewEditor && <ReviewBanner review={reviewEditor} routeCount={routes.length} removed={reviewRemoved} duplas={reviewDuplas} />}
+
+          <InvertSuggestions suggestions={suggestions} onInvert={invert} />
 
           {routes.length > 0 && (
             <FolderTree
               routes={routes}
               extraFolders={extraFolders}
+              creating={creatingFolder}
+              onCreatingChange={setCreatingFolder}
               renderRoute={renderRoute}
               onMove={moveToFolder}
               onCreate={createFolder}
               onRename={renameFolder}
               onDelete={deleteFolder}
             />
+          )}
+
+          <PairsSection pairs={pairs} tolerance={tolerance} onInvert={invert} />
+
+          {showOrg && (
+            <Fold title="Duplas y ampliaciones" count={org!.duplas.length}>
+              <OrgPanel
+                org={org!}
+                routes={routes}
+                createdAlts={createdAlts}
+                choice={altChoice}
+                relationFor={relationFor}
+                onChoose={chooseMain}
+                onVertex={setVertex}
+                onCreateAlt={createAlternative}
+                onAssignFolders={assignFolders}
+                onSelect={select}
+              />
+            </Fold>
           )}
 
           <LoadErrors errors={errors} />
@@ -358,13 +529,15 @@ export function Editor({ controlOpen, controlRunning, onOpenControl, onCloseCont
           reviewing={!!reviewEditor}
           busy={busy}
           hasDir={hasDir}
-          hasNext={groups.length > 0 && groupIndex < groups.length - 1}
+          hasNext={hasNext}
           onSaveReview={() => void saveReview()}
           onCancelReview={cancelReview}
           onSaveAll={saveAll}
           onSaveAllAndNext={saveAllAndNext}
-          onExport={exportFoldered}
+          onOpenShortcuts={() => setDrawer('atajos')}
         />
+
+        {drawer && <ToolsDrawer key={drawer} tools={tools} initialView={drawer} onClose={() => setDrawer(null)} />}
       </aside>
 
       <NoticeToast notice={notice} onAction={runNoticeAction} />

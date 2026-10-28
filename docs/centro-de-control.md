@@ -16,6 +16,27 @@ npm test         # pruebas
 corriendo, muestra la salida de todo con etiquetas `[centro]`, `[app]`, `[ollama]` y con Ctrl+C detiene todo (el centro
 guarda su estado; lo que estuviera corriendo queda como interrumpido para reintentar).
 
+## La pantalla
+
+El centro se abre encima del editor. Arriba: el estado de la conexión, un resumen («nada en ejecución · 0 en cola · en pausa»),
+el botón **Herramientas** y **Editor** para volver. A la izquierda, el chat; a la derecha, cinco pestañas, y cada una abre
+con una frase que dice para qué sirve (con los términos *lote*, *ruta*, *ejecución* o *revisión* explicados al pasar el
+cursor).
+
+- **Cola:** `Agregar a la cola` es la acción principal. Las variantes (agregar como siguiente, procesar ahora) y las opciones
+  avanzadas (sin red, sin IA) están en **Más opciones**. En cada ejecución en espera se ve **Iniciar** y un menú **⋯** con
+  el resto.
+- **En ejecución**, **Consola** (con sus filtros a la vista y la barra de seguir, pausar la vista, cargar anteriores y
+  copiar) e **Historial**.
+- **Carpetas y archivos:** una acción por mapa y el resto en **⋯** (ver el [uso](#7-uso)).
+- **Chat:** el campo de texto y las sugerencias siempre a la vista; **Ajustes** reúne si Qwen responde en texto y cuánto
+  razona.
+
+**Herramientas** abre un cajón con todo lo que puede hacer el centro, agrupado y con su descripción: pausar o reanudar la
+cola, procesar la siguiente, actualizar la fuente y encolar las pendientes de cada lote, nuevo chat y el glosario. Ninguna
+herramienta desaparece: si no aplica (por ejemplo, sin conexión con el servidor), se ve apagada y dice por qué. Es el mismo
+cajón del [editor](editor.md#la-pantalla); su diseño está en [design.md](design.md).
+
 ## 1. Arquitectura y decisiones
 
 ```
@@ -59,12 +80,13 @@ centro es un servidor Node pequeño, sin frameworks (`node:http`), que importa e
 | `src/orchestrator/server/conversa.ts` | Contexto de la conversación con Qwen: instrucciones, resumen del estado, historial, lo que hizo el centro |
 | `src/orchestrator/server/conversations.ts` | Conversaciones del chat (se guardan y se publican) y construcción de mensajes |
 | `src/orchestrator/server/replies.ts` | Respuesta de Qwen en vivo: turnos, streaming, razonamiento y «Detener» |
+| `src/orchestrator/server/nombres.ts`, `llm/siglas.ts` | Siglas de las colonias para el asistente de nombres del editor (`POST /api/nombres/siglas`): catálogo → Qwen → regla |
 | `src/orchestrator/server/watcher.ts` | Vigilancia de las carpetas de los lotes |
 | `src/orchestrator/server/pi.ts`, `explica.ts` | Pi CLI como proceso hijo seguro y el resumen que se le da |
 | `src/orchestrator/server/views.ts` | Rutas, carpetas y archivos (estado según estado.json y manifiesto) |
 | `src/orchestrator/pipeline/reviews/` | Diagnóstico geométrico, guardado de decisiones, generación y deshacer de casos revisados |
 | `src/orchestrator/server/logs.ts`, `persist.ts`, `sanitize.ts`, `config.ts`, `index.ts` | Registros, persistencia, sanitización, configuración, arranque |
-| `src/control/*` | Interfaz: `ControlCenter`, `ChatView`, `QueueView`, `RunningView`, `FilesView`, `ConsoleView`, `HistoryView`, `Details`, `useCentro`, `state`, `api`, `common` |
+| `src/control/` | Interfaz: `ControlCenter` (encabezado, pestañas y cajón de Herramientas en `ControlTools`), `chat/`, `queue/` (cola y ejecución), `files/`, `logs/` (consola e historial), `details/`, y `useCentro`, `state`, `api`, `common`, `tools` (estado de las herramientas) y `glossary` |
 | `tests/orchestrator/server/*`, `tests/control/*` | Pruebas del centro y de la interfaz |
 
 ## 3. Frontend ↔ backend y eventos
@@ -87,12 +109,12 @@ centro es un servidor Node pequeño, sin frameworks (`node:http`), que importa e
 
 ## 4. Cola, ejecuciones y persistencia
 
-| Control | Qué hace de verdad |
+| Control (dónde está) | Qué hace de verdad |
 | --- | --- |
 | Encolar | Crea una ejecución `PENDIENTE`. Si ya hay una pendiente o en curso para esa ruta, o una con la misma clave de idempotencia, devuelve esa |
-| Pausar cola | No se toman ejecuciones nuevas; la que corre termina normalmente |
-| Procesar la siguiente / Iniciar | Funciona con la cola en pausa (modo manual). Si el lote ya está ocupado, la deja al frente |
-| Reordenar / Al frente | Sólo cambia el orden de las pendientes; nunca reinicia la que corre |
+| Pausar / Reanudar la cola (**Herramientas**) | No se toman ejecuciones nuevas; la que corre termina normalmente |
+| Procesar la siguiente (**Herramientas**) / Iniciar (en cada ejecución de la cola) | Funciona con la cola en pausa (modo manual). Si el lote ya está ocupado, la deja al frente |
+| Subir, Bajar y Poner al frente (menú **⋯** de cada ejecución en cola) | Sólo cambia el orden de las pendientes; nunca reinicia la que corre |
 | Cancelar pendiente | Inmediato |
 | Cancelar en curso | El orquestador se detiene en el siguiente punto seguro (entre etapas, entre mapas, entre consultas a Qwen); una descarga o consulta ya iniciada termina primero. En la etapa de salida no se acepta |
 | Reintentar | Ejecución **nueva** desde el principio (no vuelve a descargar ni reescribe lo igual); no se presenta como reanudación |
@@ -120,7 +142,7 @@ parámetros, resultado, errores, archivos de entrada y salida), `cola.json`, `re
   observable: la tarea enviada (sin coordenadas), cuándo empieza, cuánto tarda, si se reintentó, la respuesta validada y lo
   descartado. «¿Qué está haciendo Qwen?» lee la compuerta del proceso (tarea actual, en espera, última) y `/api/ps` de
   Ollama.
-- **Qwen en el chat** (interruptor «Qwen responde», activo por omisión): a cada mensaje escrito, además de la respuesta del
+- **Qwen en el chat** (interruptor «Qwen responde» en **Ajustes** del chat, activo por omisión): a cada mensaje escrito, además de la respuesta del
   centro, Qwen contesta en texto, en streaming (`/api/chat` de Ollama con `stream: true`). Recibe las instrucciones, un
   resumen del estado (lotes, rutas, cola, lo que corre, últimas ejecuciones; sin coordenadas ni rutas del equipo), los
   últimos 8 turnos **de la conversación actual** y lo que el centro respondió o hizo. Se muestran la fase (esperando turno,
@@ -131,7 +153,7 @@ parámetros, resultado, errores, archivos de entrada y salida), `cola.json`, `re
   una en una y comparten la compuerta del modelo con el procesamiento. Se registran en la consola (componente `QWEN`) y en
   `chat.jsonl`. `POST /api/chat` acepta `conversacion`, `conversar` y `esfuerzo`; `POST /api/chat/detener` (`id` opcional)
   detiene la respuesta.
-  - **Esfuerzo de razonamiento** (selector «Razonamiento»): `ninguno` (`think: false`), `bajo` (256 tokens, por omisión),
+  - **Esfuerzo de razonamiento** (selector «Razonamiento» en **Ajustes** del chat): `ninguno` (`think: false`), `bajo` (256 tokens, por omisión),
     `medio` (1 024), `alto` (3 072). Ollama no limita el razonamiento de qwen3.5 (`think: "low"` se acepta pero no cambia
     nada), así que el presupuesto se aplica aquí: se cuentan los trozos de razonamiento (uno por token) y al agotarlo sin
     haber empezado a responder se corta la petición y se continúa en `/api/generate` con `raw: true`, el formato de Qwen
@@ -139,7 +161,7 @@ parámetros, resultado, errores, archivos de entrada y salida), `cola.json`, `re
     thinking directly now. </think>»): responde con lo que ya pensó en vez de razonar hasta llenar el contexto. Se quitan del
     texto las marcas del formato (`<|im_start|>`, `<think>`) para que nadie pueda abrir otro turno. `num_predict` =
     presupuesto + 1 536 para la respuesta; `num_ctx` 8192, el mismo del procesamiento, para no recargar el modelo.
-  - **Conversaciones** (selector y «＋ Nuevo chat»): cada mensaje lleva su conversación y Qwen sólo relee los de la
+  - **Conversaciones** (selector y «Nuevo chat»): cada mensaje lleva su conversación y Qwen sólo relee los de la
     conversación en la que se le pregunta; una nueva empieza sin historial. Toma el título de su primer mensaje; si ya hay
     una vacía, «Nuevo chat» usa esa. «Esta ruta» / «esa ejecución» también se recuerdan por conversación. Los mensajes de
     antes quedan en «Mensajes anteriores». Se guardan en `conversaciones.json`; `GET/POST /api/conversaciones`,
@@ -151,7 +173,7 @@ parámetros, resultado, errores, archivos de entrada y salida), `cola.json`, `re
     navegador aplica un trozo sólo sobre la versión inmediatamente anterior; si perdió uno, espera la siguiente versión
     completa. Se sanitiza el texto acumulado y se manda la diferencia; si la sanitización cambió algo ya enviado, va la
     versión completa.
-  - **Markdown**: respuesta y razonamiento se muestran con `src/control/markdown.tsx` (títulos, negritas, cursivas, tachado,
+  - **Markdown**: respuesta y razonamiento se muestran con `src/control/chat/markdown.tsx` (títulos, negritas, cursivas, tachado,
     código, listas anidadas/numeradas/de tareas, tablas, citas, enlaces http(s)), convertido a elementos de React, nunca HTML
     crudo. Tolera texto a medias: marcas sin cerrar se ven tal cual hasta que se cierran. Un cursor ▍ marca que sigue
     escribiendo.
@@ -162,6 +184,16 @@ parámetros, resultado, errores, archivos de entrada y salida), `cola.json`, `re
   qwen3.5:4b`, sin shell, con entorno mínimo y en una carpeta vacía. Se registra cada evento JSONL relevante (inicio,
   razonamiento con su tamaño, escritura, fin, reintentos, intentos de herramienta) y cada línea de stderr; el texto que va
   escribiendo llega al chat tal cual (streaming real). Si Pi corta por longitud, se avisa.
+- **Siglas para nombrar a mano** (`POST /api/nombres/siglas`, lo usa el asistente *Sugerir nombre* del editor al resolver un
+  mapa): recibe `{ lote, traza, lugares[1–12] }` y responde el código de la ruta (del reporte del lote, de la traza
+  pendiente que se le indica), las siglas de cada lugar con su origen (`config`, `aprendido`, `sugerido`, `qwen` o
+  `regla`) y qué pasó con la IA (`habilitada`, `usada`, `modelo`, `ms`, `error`, `descartes`). Un lugar que ya tiene siglas
+  en el catálogo del lote (configuración > aprendido > sugerido en el reporte) no se pregunta a Qwen; los demás van en **una**
+  consulta con `structured()` (esquema JSON, sin razonamiento, temperatura 0, ejemplos del catálogo y siglas ocupadas) y
+  cada respuesta se valida en el servidor: formato de 2 a 6 mayúsculas o cifras, que salga del nombre del lugar y que no
+  sea de otro lugar. Lo que no pasa se descarta (queda en `descartes`) y ese lugar usa la regla de siglas con una cifra
+  si choca. Si la IA está desactivada o Qwen no responde, la respuesta es igualmente útil y lo dice. 409 si el lote aún
+  no tiene reporte; 404 si la traza o su ruta no están en él. Aparece en la consola como `QWEN` (origen `editor`).
 - Todo pasa por `sanitize.ts`: JWT, `Bearer`, claves (`sk-…`, `AIza…`, `ghp_…`), `password=`, credenciales en URLs, claves
   sensibles en datos estructurados y la carpeta personal (→ `~`).
 
@@ -195,16 +227,16 @@ configurados. Más en [SECURITY.md](../SECURITY.md) y en [adr/0003-token-local-d
    ruta 2», «muéstrame los archivos que fallaron», «¿qué está haciendo Qwen?», «muéstrame los últimos mensajes de Pi CLI»,
    «reintenta la ruta 2», «¿qué archivos se generaron y dónde?», «abre los detalles de la ruta 4», «explica la última
    ejecución con Pi».
-3. En **Carpetas y archivos**, pulsa **Resolver conflictos** junto al archivo marcado como revisión para cargar el KML/KMZ
+3. En **Carpetas y archivos**, la columna **Qué hacer** muestra, en cada mapa, la acción que toca ahora y el resto en el menú **⋯**. Pulsa **Resolver conflictos** en el mapa con casos pendientes para cargar el KML/KMZ
    original completo del mapa (no solo la copia del trazo pendiente). Ajusta geometrías, duplas, ampliaciones y carpetas;
    **Guardar y generar** registra cada conflicto pendiente como un KML individual con su nombre, no como un solo KML
    combinado, y conserva la geometría editada en futuras ejecuciones. También puedes descartar casos individuales o
    seleccionados y deshacer decisiones desde esa vista.
 4. Un mapa **sin itinerarios utilizables** muestra el motivo (p. ej. «2 ampliación(es)», «copia de «20.-…»») y tres salidas:
-   **↻ Volver a revisar** (en el encabezado de la ruta: la vuelve a clasificar sin red con los originales guardados; lo
+   **Volver a revisar** (en el encabezado de la ruta: la vuelve a clasificar sin red con los originales guardados; lo
    resuelto a mano se conserva), **Evaluar a mano** (abre el original en el editor; lo que dejes se registra agrupado por las
    duplas que muestra el editor, cada dupla en su carpeta en el lugar del mapa dentro de la ruta, y las de los mapas
-   siguientes se recorren) y **Descartar mapa** (queda `DESCARTADO`: no se genera nada de él y la ruta deja de esperar su
+   siguientes se recorren) y **Descartar el mapa** (en el menú **⋯** del mapa; queda `DESCARTADO`: no se genera nada de él y la ruta deja de esperar su
    revisión). Todo se deshace desde la misma vista (`POST /api/revisiones/mapa`, `POST /api/revisiones/decidir-mapa`).
 5. Cerrar o recargar la página no detiene nada: las ejecuciones viven en el servidor.
 

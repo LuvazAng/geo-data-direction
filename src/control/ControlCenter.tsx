@@ -1,17 +1,44 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Icon, Term } from '@ui';
 import { api } from './api';
-import { ChatView, type Navigate } from './ChatView';
+import { ChatView, type Navigate } from './chat/ChatView';
 import { duration, jobTitle, useNow } from './common';
-import { ConsoleView } from './ConsoleView';
-import { FileDetailModal, JobDetail } from './Details';
-import { FilesView } from './FilesView';
-import { HistoryView } from './HistoryView';
-import { QueueView } from './QueueView';
-import { RunningView } from './RunningView';
+import { ControlTools } from './ControlTools';
+import { FileDetailModal, JobDetail } from './details/Details';
+import { FilesView } from './files/FilesView';
+import { define } from './glossary';
+import { ConsoleView } from './logs/ConsoleView';
+import { HistoryView } from './logs/HistoryView';
+import { QueueView } from './queue/QueueView';
+import { RunningView } from './queue/RunningView';
 import { isActive } from './state';
 import type { Centro } from './useCentro';
 
 type Tab = 'cola' | 'ejecucion' | 'archivos' | 'consola' | 'historial' | 'chat';
+
+/** Para qué sirve cada pestaña, en una frase que se lee al abrirla. */
+const INTRO: Record<Exclude<Tab, 'chat'>, ReactNode> = {
+  cola: (
+    <>
+      Elige qué <Term definition={define('ruta')}>ruta</Term> procesar y en qué orden. Cada <Term definition={define('ejecucion')}>ejecución</Term> descarga los
+      mapas de la ruta, decide el origen, el destino y el sentido de cada trazo, y escribe los archivos.
+    </>
+  ),
+  ejecucion: (
+    <>
+      Lo que está procesando el orquestador ahora mismo, y qué hacen <Term definition={define('qwen')}>Qwen</Term> y{' '}
+      <Term definition={define('pi')}>Pi CLI</Term>.
+    </>
+  ),
+  archivos: (
+    <>
+      Lo que se descargó y se generó en cada <Term definition={define('lote')}>lote</Term> y ruta. Aquí resuelves en el editor los casos de{' '}
+      <Term definition={define('revision')}>revisión</Term>.
+    </>
+  ),
+  consola: <>Los registros del orquestador en vivo. Filtra por componente, nivel, ruta o ejecución.</>,
+  historial: <>Las ejecuciones que ya terminaron y su resultado. Abre una para ver sus archivos y registros.</>,
+};
 
 /**
  * Centro de control conversacional. Se abre encima del editor (que sigue montado con su estado).
@@ -41,6 +68,7 @@ export function ControlCenter({
 }) {
   const { state, lastBeat, error, setError, call } = centro;
   const [tab, setTab] = useState<Tab>('cola');
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [file, setFile] = useState<{ lote: string; rel: string } | null>(null);
   const [filesTarget, setFilesTarget] = useState<{ lote: string; ruta?: string } | null>(null);
@@ -105,22 +133,15 @@ export function ControlCenter({
           ) : (
             <span className="muted small">nada en ejecución</span>
           )}
-          <span className="small muted">
-            · {pending} en cola{state.cola.pausada ? ' (en pausa)' : ''}
-          </span>
+          <span className="small muted">· {pending} en cola</span>
+          {state.cola.pausada && <span className="small warn-text">· en pausa</span>}
         </div>
         <div className="row">
-          {state.cola.pausada ? (
-            <button disabled={!online} onClick={() => void call(api.resume)}>
-              ▶ Reanudar cola
-            </button>
-          ) : (
-            <button disabled={!online} onClick={() => void call(api.pause)}>
-              ⏸ Pausar cola
-            </button>
-          )}
-          <button onClick={onClose} title="Volver al editor (Esc). Las ejecuciones siguen en el servidor.">
-            ✕ Editor
+          <button onClick={() => setToolsOpen(true)}>
+            <Icon name="tools" /> Herramientas
+          </button>
+          <button onClick={onClose} title="Volver al editor. Las ejecuciones siguen en el servidor.">
+            <Icon name="x" /> Editor
           </button>
         </div>
       </header>
@@ -154,7 +175,7 @@ export function ControlCenter({
                 ['archivos', 'Carpetas y archivos'],
                 ['consola', 'Consola'],
                 ['historial', 'Historial'],
-              ] as [Tab, string][]
+              ] as [Exclude<Tab, 'chat'>, string][]
             ).map(([t, label]) => (
               <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
                 {label}
@@ -163,12 +184,14 @@ export function ControlCenter({
           </nav>
           <div className="cc-tab-body">
             {state.conexion === 'conectando' && !state.servidor && <p className="muted">Cargando el estado del servidor…</p>}
+            {tab !== 'chat' && <p className="cc-intro">{INTRO[tab]}</p>}
             {tab === 'cola' && <QueueView centro={centro} online={online} openJob={nav.openJob} />}
             {tab === 'ejecucion' && <RunningView centro={centro} online={online} openJob={nav.openJob} />}
             {tab === 'archivos' && <FilesView centro={centro} nav={nav} target={filesTarget} />}
             {tab === 'consola' && <ConsoleView centro={centro} openJob={nav.openJob} />}
             {tab === 'historial' && <HistoryView centro={centro} openJob={nav.openJob} />}
           </div>
+          {toolsOpen && <ControlTools centro={centro} online={online} onClose={() => setToolsOpen(false)} />}
         </section>
       </div>
 

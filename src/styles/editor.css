@@ -1,0 +1,873 @@
+/* Editor de trayectos: mapa, panel, lista de trazos con su inspector, herramientas, organización y carpetas. */
+
+/* --- Estructura --- */
+.app {
+  display: flex;
+  height: 100%;
+}
+.map-wrap {
+  position: relative;
+  flex: 7 1 0;
+  min-width: 0;
+  container-type: inline-size; /* la barra de edición se compacta según el ancho del mapa */
+}
+.map {
+  position: absolute;
+  inset: 0;
+}
+
+/* --- Barra y avisos sobre el mapa --- */
+/* Las barras sobre el mapa comparten una fila (a la derecha de los botones de zoom) y bajan a otra si no caben */
+.map-top {
+  position: absolute;
+  top: 10px;
+  left: 54px;
+  right: 10px;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none; /* entre las barras el mapa sigue recibiendo el ratón */
+}
+.map-top > * {
+  pointer-events: auto;
+}
+.map-toolbar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: auto;
+  background: var(--map-chrome);
+  padding: 4px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+}
+.map-toolbar .seg {
+  border-color: transparent;
+}
+.map-toolbar button.quiet.open {
+  background: var(--hover);
+}
+.layers-opacity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Herramientas del trazo seleccionado, sobre el mapa */
+.edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--map-chrome);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+}
+.edit-bar-who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 2px;
+  padding: 0 8px 0 4px;
+  font-size: 13px;
+  color: var(--text-2);
+  border-right: 1px solid var(--line);
+}
+.edit-tool[aria-pressed='true'] {
+  color: var(--on-accent);
+  background: var(--accent);
+}
+.edit-tool[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: default;
+}
+.edit-tool[aria-disabled='true']:hover {
+  background: transparent;
+}
+.edit-menu-item {
+  align-items: flex-start;
+  gap: 8px;
+}
+.edit-menu-item.off {
+  cursor: default;
+}
+.edit-menu-item.off:hover {
+  background: transparent;
+}
+.edit-menu-item.off > svg,
+.edit-menu-item.off .edit-menu-text > span {
+  opacity: 0.55;
+}
+.edit-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.edit-menu-text kbd {
+  margin-left: 8px;
+}
+.edit-menu-text .tool-badge {
+  margin-left: 8px;
+}
+.edit-menu-opacity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  margin-top: 2px;
+  font-size: 13px;
+  border-top: 1px solid var(--line);
+}
+.edit-menu-opacity > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* mapa angosto: sólo iconos (cada botón conserva su nombre en el título) */
+@container (max-width: 900px) {
+  .edit-tool-label,
+  .edit-bar-name {
+    display: none;
+  }
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 40px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 20px;
+  border: 2px dashed var(--accent-hi);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  pointer-events: none;
+}
+.edit-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  background: var(--map-chrome);
+  border: 1px solid var(--edit);
+  font-size: 13px;
+  white-space: nowrap;
+  max-width: calc(100% - 32px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Panel --- */
+.panel {
+  position: relative; /* el cajón de herramientas se abre dentro */
+  flex: 3 1 0;
+  min-width: 380px;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+}
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.panel-actions button {
+  padding: 5px 10px;
+  font-size: 13px;
+}
+.group-nav {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.group-nav select {
+  flex: 1;
+  min-width: 0;
+}
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+}
+.panel-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+}
+.help-link {
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0 12px;
+}
+.welcome h2 {
+  font-size: 17px;
+}
+.welcome p {
+  margin: 0;
+  color: var(--text-2);
+}
+.welcome .small {
+  color: var(--muted);
+}
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--text-2);
+}
+.steps li::marker {
+  color: var(--muted);
+  font-weight: 600;
+}
+.steps b {
+  color: var(--text);
+}
+
+.section-head {
+  margin: 4px 0 8px;
+}
+
+/* --- Lista de trazos --- */
+.route-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 8px 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--route-color);
+  border-radius: 10px;
+}
+.route-row.selected {
+  background: var(--card-hi);
+  border-color: var(--line-strong);
+  border-left-color: var(--route-color);
+}
+.row-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+}
+.row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 10px;
+  padding: 2px 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.row-title {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.row-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tags .tag {
+  margin-left: 0;
+}
+.saved {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ok-text);
+}
+
+/* El recorrido en miniatura: ● INICIO ━━▶ FINAL ● con el color del trazo */
+.rline {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  width: 56px;
+}
+.rline-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.rline-dot.start {
+  background: var(--start);
+}
+.rline-dot.end {
+  background: var(--end);
+}
+.rline-bar {
+  position: relative;
+  flex: 1;
+  height: 3px;
+  margin: 0 4px 0 1px;
+  background: var(--route-color);
+  border-radius: 2px;
+}
+.rline-bar::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 6px solid var(--route-color);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* --- Inspector del trazo seleccionado --- */
+.inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.inspector .origin {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.insp-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.insp-block h3 {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.insp-block p {
+  margin: 0;
+}
+
+/* INICIO y FINAL unidos por el recorrido: la línea sale del punto verde y llega al rojo */
+.ends {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 24px;
+  font-size: 13px;
+}
+.end-item {
+  position: relative;
+  overflow-wrap: anywhere;
+}
+.end-item .dot {
+  position: absolute;
+  left: -23.5px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--card-hi);
+  box-shadow: 0 0 0 2px var(--route-color);
+}
+.dot.start {
+  background: var(--start);
+}
+.dot.end {
+  background: var(--end);
+}
+.end-item.start::after {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 17px;
+  bottom: -13px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--route-color);
+}
+.end-item.end::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: -4px;
+  border-left: 5.5px solid transparent;
+  border-right: 5.5px solid transparent;
+  border-top: 8px solid var(--route-color);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.field > span:first-child {
+  flex: none;
+  width: 52px;
+}
+.field input,
+.field select {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+.folder-select {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Herramienta de forma abierta (editar, simplificar, ajustar): sólo mientras se usa */
+.shape-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.shape-tool h3 {
+  font-size: 13px;
+}
+.shape-tool p {
+  margin: 0;
+}
+.shape-tool .grow {
+  flex: 1;
+  min-width: 80px;
+}
+
+.colonias-list {
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 22px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* --- Comparación de pares --- */
+.card.pair.ok {
+  border-left: 4px solid var(--ok);
+}
+.card.pair.warn {
+  border-left: 4px solid var(--warn);
+}
+.pair-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: 600;
+}
+.similarity {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+}
+.verdict {
+  line-height: 1.6;
+}
+
+/* --- Duplas y tramos cortos --- */
+.org {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.org > p {
+  margin: 0;
+}
+.org .card.dupla {
+  gap: 6px;
+  margin-bottom: 0;
+}
+ul.shorts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+ul.shorts li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+ul.shorts select {
+  max-width: 100%;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+.short-name {
+  font-size: 13px;
+}
+.vertices {
+  gap: 4px 10px;
+}
+.vertex-input {
+  width: 64px;
+  padding: 1px 4px;
+  font-size: 12px;
+}
+
+/* --- Árbol de carpetas --- */
+.folder {
+  margin-bottom: 6px;
+  padding: 2px 0 2px 8px;
+  border-left: 2px solid var(--line-strong);
+  border-radius: 4px;
+}
+.folder.root {
+  border-left-color: transparent;
+}
+.folder.drop {
+  background: color-mix(in srgb, var(--accent-hi) 15%, transparent);
+  border-left-color: var(--accent-hi);
+}
+.folder-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.folder-head .icon {
+  padding: 2px 4px;
+}
+.folder-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+}
+.folder-empty {
+  padding: 6px 0 8px 18px;
+}
+.folder-input {
+  width: 100%;
+  margin-bottom: 6px;
+}
+.folder-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 6px 18px;
+  padding: 8px;
+  background: color-mix(in srgb, var(--end) 8%, transparent);
+  border: 1px solid var(--end);
+  border-radius: var(--radius);
+}
+.folder-confirm button {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+.folder .route-row {
+  cursor: grab;
+}
+
+/* --- Aviso temporal --- */
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 40;
+  padding: 10px 16px;
+  background: var(--card-hi);
+  border: 1px solid var(--ok);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+.notice.error {
+  border-color: var(--end);
+}
+.notice button.link {
+  margin-left: 12px;
+  font-weight: 600;
+}
+
+/* --- Marcadores sobre el mapa (no cambian con el tema: se leen sobre calles y satélite) --- */
+.endpoint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+/* En los hijos: MapLibre escribe `opacity` en línea sobre el elemento del marcador */
+.endpoint > * {
+  opacity: calc(var(--route-opacity, 1) * var(--routes-opacity, 1));
+}
+.endpoint.dim > * {
+  opacity: calc(0.45 * var(--route-opacity, 1) * var(--routes-opacity, 1));
+}
+.endpoint-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 2px var(--route-color),
+    0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.endpoint-start .endpoint-dot {
+  background: var(--start);
+}
+.endpoint-end .endpoint-dot {
+  background: var(--end);
+}
+.endpoint-label {
+  font:
+    700 11px system-ui,
+    sans-serif;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.85);
+  border-left: 3px solid var(--route-color);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Salida / reincorporación de un tramo corto */
+.junction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+.junction-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  transform: rotate(45deg);
+  background: #f8fafc;
+  border: 3px solid #0f172a;
+  box-shadow: 0 0 0 2px #facc15;
+}
+.junction-label {
+  font:
+    700 11px system-ui,
+    sans-serif;
+  color: #111827;
+  background: #facc15;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* --- Asistente de nombres: siglas de las colonias y comparación del nombre original con la propuesta --- */
+.name-assistant {
+  padding: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--card);
+}
+.name-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.name-assistant code {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.name-sub {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.name-places,
+.name-cands,
+.criteria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.name-places {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.name-place {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 8px;
+}
+.name-place-label {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.name-place input {
+  font-family: var(--mono);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+.name-place input[aria-invalid='true'] {
+  border-color: var(--warn);
+}
+.name-place-note {
+  grid-column: 1 / -1;
+}
+.name-discards {
+  margin: 0;
+  padding-left: 16px;
+}
+
+/* un trazo de la dupla: su letra, de qué colonia a cuál, y los nombres que compiten */
+.name-trace {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.name-trace-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.name-trace p {
+  margin: 0;
+}
+.name-cands {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.name-cand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card-hi);
+}
+.name-cand.propuesta {
+  border-color: color-mix(in srgb, var(--accent-hi) 55%, transparent);
+}
+.name-cand-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.name-cand-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.name-cand .tag {
+  margin-left: 0;
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+  color: var(--ok-text);
+}
+.name-cand-name {
+  display: block;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--inset);
+  overflow-wrap: anywhere;
+}
+.name-cand p {
+  margin: 0;
+}
+.name-score {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+  color: var(--warn-text);
+}
+.name-score.full {
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+  color: var(--ok-text);
+}
+.criteria {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.criteria li {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.criteria li .icon-svg {
+  margin-top: 2px;
+}
+.criteria li.ok {
+  color: var(--ok-text);
+}
+.criteria li.bad {
+  color: var(--warn-text);
+}
+
+/* --- Pantallas bajas: la frase de ayuda del encabezado cede su espacio a la lista --- */
+@media (max-height: 760px) {
+  .panel-sub {
+    display: none;
+  }
+}
+
+/* --- Pantallas angostas: el panel pasa bajo el mapa --- */
+@media (max-width: 900px) {
+  .app {
+    flex-direction: column;
+  }
+  .map-wrap {
+    flex: 1 1 45%;
+    min-height: 0;
+  }
+  .panel {
+    flex: 1 1 55%;
+    min-width: 0;
+    min-height: 0;
+    max-width: none;
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+}
