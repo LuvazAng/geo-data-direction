@@ -1,0 +1,7 @@
+dist
+node_modules
+public
+data
+tests/fixtures
+package-lock.json
+*.md

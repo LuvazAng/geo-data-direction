@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>R1S-JOJU-IXT</name>
+    <description>RUTA 1</description>
+    <Style id="line-0097A7-1200-normal">
+      <LineStyle>
+        <color>ffa79700</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-0097A7-1200-highlight">
+      <LineStyle>
+        <color>ffa79700</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-0097A7-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-0097A7-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-0097A7-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="line-01579B-1200-normal">
+      <LineStyle>
+        <color>ff9b5701</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-01579B-1200-highlight">
+      <LineStyle>
+        <color>ff9b5701</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-01579B-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-01579B-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-01579B-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="line-F57C00-1200-normal">
+      <LineStyle>
+        <color>ff007cf5</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-F57C00-1200-highlight">
+      <LineStyle>
+        <color>ff007cf5</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-F57C00-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-F57C00-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-F57C00-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="line-FF5252-1200-normal">
+      <LineStyle>
+        <color>ff5252ff</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-FF5252-1200-highlight">
+      <LineStyle>
+        <color>ff5252ff</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-FF5252-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-FF5252-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-FF5252-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    
+  
+	<Style id="dir-tool-inicio"><IconStyle><color>ff00ff00</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/go.png</href></Icon></IconStyle></Style>
+	<Style id="dir-tool-final"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/stop.png</href></Icon></IconStyle></Style>
+	<Placemark>
+        <name>R1S-JOJU-IXT</name>
+        <description><![CDATA[nombre: <br>descripción: <br>OID: 204<br>ZONA: SUR<br>RUTA: RUTA 1<br>DESCRIPCIO: JOJUTLA-PUENTE DE IXTLA<br>AUTO-AMPL: ITINERARIO<br>DEFIN-PROV: DEFINITIVOS<br>DURACION: DEFINITIVA<br>FOLIO: SGG/DGT/SDP/001264/97]]></description>
+        <styleUrl>#line-01579B-1200</styleUrl>
+        <ExtendedData>
+          <Data name="nombre">
+            <value/>
+          </Data>
+          <Data name="descripción">
+            <value/>
+          </Data>
+          <Data name="OID">
+            <value>204</value>
+          </Data>
+          <Data name="ZONA">
+            <value>SUR</value>
+          </Data>
+          <Data name="RUTA">
+            <value>RUTA 1</value>
+          </Data>
+          <Data name="DESCRIPCIO">
+            <value>JOJUTLA-PUENTE DE IXTLA</value>
+          </Data>
+          <Data name="AUTO-AMPL">
+            <value>ITINERARIO</value>
+          </Data>
+          <Data name="DEFIN-PROV">
+            <value>DEFINITIVOS</value>
+          </Data>
+          <Data name="DURACION">
+            <value>DEFINITIVA</value>
+          </Data>
+          <Data name="FOLIO">
+            <value>SGG/DGT/SDP/001264/97</value>
+          </Data>
+        </ExtendedData>
+        <LineString>
+          <tessellate>1</tessellate>
+          <coordinates>
+-99.17783,18.61556,0 -99.17777,18.61585,0 -99.1760388,18.6172599,0 -99.1772139,18.618394,0 -99.1774437,18.6177829,0 -99.1819713,18.6189706,0 -99.1826971,18.6161138,0 -99.187612,18.617412,0 -99.19103,18.61777,0 -99.19162,18.61815,0 -99.19277,18.61972,0 -99.1951,18.62135,0 -99.19805,18.62241,0 -99.20298,18.62361,0 -99.20353,18.62411,0 -99.21027,18.63467,0 -99.2106549,18.6349127,0 -99.210914,18.6349579,0 -99.2115902,18.6348626,0 -99.2416327,18.611776,0 -99.2423606,18.6113176,0 -99.2427142,18.6111923,0 -99.2430713,18.6111451,0 -99.2446521,18.6112228,0 -99.2455091,18.6113722,0 -99.2464148,18.6116792,0 -99.247395,18.6122333,0 -99.2540527,18.61664,0 -99.2544339,18.6167215,0 -99.2548036,18.6166076,0 -99.2551676,18.6163387,0 -99.2553912,18.6160942,0 -99.2556205,18.6155231,0 -99.25577,18.61535,0 -99.2564684,18.6149719,0 -99.2567939,18.6147162,0 -99.2574914,18.6138801,0 -99.2579045,18.6135359,0 -99.2587369,18.6131988,0 -99.2588565,18.6129984,0 -99.2588992,18.6123963,0 -99.2590566,18.6121447,0 -99.25997,18.61113,0 -99.26019,18.61065,0 -99.2603134,18.6092308,0 -99.2601357,18.6089045,0 -99.259979,18.6086928,0 -99.2599552,18.6085753,0 -99.2601048,18.6076718,0 -99.26006,18.60741,0 -99.259,18.60654,0 -99.25731,18.60407,0 -99.25629,18.60322,0 -99.25617,18.60288,0 -99.25987,18.58827,0 -99.26051,18.58755,0 -99.26317,18.58627,0 -99.26388,18.58547,0 -99.26414,18.58481,0 -99.26422,18.58418,0 -99.26405,18.58085,0 -99.26397,18.57216,0 -99.26418,18.57184,0 -99.26459,18.57164,0 -99.26816,18.57214,0 -99.26853,18.57204,0 -99.26878,18.57167,0 -99.26934,18.56701,0 -99.26745,18.55961,0 -99.26742,18.55821,0 -99.2705303,18.5587982,0 -99.269958,18.5608775,0 -99.2696462,18.5635837,0 -99.27126,18.56369,0 -99.27409,18.56249,0 -99.2745821,18.5625718,0 -99.2747508,18.5625944,0 -99.2749772,18.5625104,0 -99.275389,18.5622333,0 -99.2755754,18.5621745,0 -99.2757742,18.5621576,0 -99.2760805,18.5623742,0 -99.2763551,18.5626318,0 -99.2765885,18.5630557,0 -99.2766925,18.5632984,0 -99.2770028,18.5637563,0 -99.2772266,18.5640591,0 -99.2774767,18.564321,0 -99.2784494,18.5649548,0 -99.2799329,18.5665484,0 -99.28241,18.56736,0 -99.28432,18.56849,0 -99.28564,18.56902,0 -99.28818,18.57134,0 -99.28868,18.57195,0 -99.29067,18.57567,0 -99.29227,18.58097,0 -99.29365,18.58299,0 -99.2948,18.58546,0 -99.2952,18.58601,0 -99.29583,18.58661,0 -99.29654,18.58691,0 -99.29795,18.58672,0 -99.29865,18.58691,0 -99.29968,18.58881,0 -99.30044,18.58948,0 -99.30217,18.59041,0 -99.30266,18.59085,0 -99.30285,18.59148,0 -99.30285,18.59375,0 -99.30305,18.59459,0 -99.30797,18.60016,0 -99.30842,18.60056,0 -99.31173,18.60266,0 -99.31224,18.6033,0 -99.31292,18.60452,0 -99.31329,18.60474,0 -99.31425,18.6049,0 -99.31466,18.60509,0 -99.31551,18.60658,0 -99.31788,18.60752,0 -99.31802,18.60791,0 -99.31797,18.60823,0 -99.31728,18.61007,0 -99.31688,18.61038,0 -99.31306,18.61183,0 -99.3125,18.61216,0 -99.31218,18.61276,0 -99.312,18.61397,0 -99.31234,18.61442,0 -99.31547,18.61576,0 -99.31568,18.61598,0 -99.31576,18.61658,0 -99.31546,18.61861,0 -99.31559,18.61915,0 -99.318,18.62122,0 -99.32009,18.62244,0 -99.32096,18.62265,0 -99.32037,18.62374,0 -99.32179,18.62412,0 -99.32417,18.61676,0 -99.32559,18.61559,0 -99.32619,18.61537,0 -99.32882,18.6125,0 -99.32933,18.61224,0 -99.32925,18.61251,0 -99.32943,18.61256,0
+</coordinates>
+        </LineString>
+      </Placemark>
+	<Placemark><name>INICIO</name><description>Calle Francisco Leyva, Jojutla</description><styleUrl>#dir-tool-inicio</styleUrl><Point><coordinates>-99.17783,18.61556,0</coordinates></Point></Placemark>
+	<Placemark><name>FINAL</name><description>Puente de Ixtla</description><styleUrl>#dir-tool-final</styleUrl><Point><coordinates>-99.32943,18.61256,0</coordinates></Point></Placemark>
+</Document>
+</kml>

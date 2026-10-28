@@ -1,0 +1,14 @@
+Extracto del Marco Geoestadístico para las pruebas
+===================================================
+
+Fuente:  INEGI, Marco Geoestadístico (edición 2025), entidad 17 Morelos.
+         https://www.inegi.org.mx/temas/mg/
+Uso:     libre, citando al INEGI como autor (https://www.inegi.org.mx/inegi/terminos.html).
+
+Qué contiene (sin modificar la geometría ni los atributos de los registros):
+  17mun   los municipios de Jojutla y Puente de Ixtla
+  17l     las localidades de Jojutla y Puente de Ixtla
+  17lpr   sin registros (la capa debe existir, pero ninguna prueba usa localidades rurales puntuales)
+
+Es lo mínimo para que la clasificación y el orquestador corran de principio a fin en cualquier copia del
+repositorio. Los datos completos de Morelos se describen en data/README.md.

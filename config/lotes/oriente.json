@@ -1,0 +1,31 @@
+{
+  "lote": "ORIENTE",
+  "zona": "ORIENTE",
+  "fuente": {
+    "url": "https://sites.google.com/view/movilidadmorelos/oriente",
+    "estrategia": "google-sites",
+    "hosts": ["sites.google.com", "www.google.com"],
+    "subpaginas": [],
+    "mapas": [],
+    "zonasReferencia": ["https://sites.google.com/view/movilidadmorelos/centro", "https://sites.google.com/view/movilidadmorelos/sur"]
+  },
+  "nomenclatura": {
+    "patron": "{ruta}-{origen}-{destino}{via}",
+    "letraZona": { "SUR": "S", "ORIENTE": "O" },
+    "rutas": {},
+    "rutasBase": { "C T M": "CTM", "INTERESCOLAR": "INT_ESC" },
+    "localidades": {},
+    "alias": {},
+    "codigoNuevo": "sugerir",
+    "colision": "sufijo"
+  },
+  "ia": {
+    "habilitada": true,
+    "url": "http://127.0.0.1:11434",
+    "modelo": "qwen3.5:4b"
+  },
+  "salida": {
+    "soloPrincipales": true,
+    "copiarRevision": true
+  }
+}

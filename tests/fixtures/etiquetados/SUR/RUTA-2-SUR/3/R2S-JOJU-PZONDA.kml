@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>R2S-JOJU-PZONDA</name>
+    <description>RUTA 2</description>
+    <Style id="line-673AB7-1200-normal">
+      <LineStyle>
+        <color>ffb73a67</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-673AB7-1200-highlight">
+      <LineStyle>
+        <color>ffb73a67</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-673AB7-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-673AB7-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-673AB7-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="line-817717-1200-normal">
+      <LineStyle>
+        <color>ff177781</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-817717-1200-highlight">
+      <LineStyle>
+        <color>ff177781</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-817717-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-817717-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-817717-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="line-880E4F-1200-normal">
+      <LineStyle>
+        <color>ff4f0e88</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-880E4F-1200-highlight">
+      <LineStyle>
+        <color>ff4f0e88</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-880E4F-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-880E4F-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-880E4F-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="line-F9A825-1200-normal">
+      <LineStyle>
+        <color>ff25a8f9</color>
+        <width>1.2</width>
+      </LineStyle>
+    </Style>
+    <Style id="line-F9A825-1200-highlight">
+      <LineStyle>
+        <color>ff25a8f9</color>
+        <width>1.8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="line-F9A825-1200">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#line-F9A825-1200-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#line-F9A825-1200-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    
+  
+	<Style id="dir-tool-inicio"><IconStyle><color>ff00ff00</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/go.png</href></Icon></IconStyle></Style>
+	<Style id="dir-tool-final"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/stop.png</href></Icon></IconStyle></Style>
+	<Placemark>
+        <name>R2S-JOJU-PZONDA</name>
+        <description><![CDATA[descripción: <br>OID: 728<br>ZONA: SUR<br>RUTA: RUTA 2<br>ITINERARIO: 3. JOJUTLA-POZA HONDA-JOJUTLA<br>DESCRIPCIO: JOJUTLA-POZA HONDA (X LA GAS)<br>AUTO-AMPL: ITINERARIO<br>DEFIN-PROV: DEFINITIVOS<br>DURACION: DEFINITIVA<br>FOLIO: SGG/DGT/SDP/001266/97]]></description>
+        <styleUrl>#line-817717-1200</styleUrl>
+        <ExtendedData>
+          <Data name="descripción">
+            <value/>
+          </Data>
+          <Data name="OID">
+            <value>728</value>
+          </Data>
+          <Data name="ZONA">
+            <value>SUR</value>
+          </Data>
+          <Data name="RUTA">
+            <value>RUTA 2</value>
+          </Data>
+          <Data name="ITINERARIO">
+            <value>3. JOJUTLA-POZA HONDA-JOJUTLA</value>
+          </Data>
+          <Data name="DESCRIPCIO">
+            <value>JOJUTLA-POZA HONDA (X LA GAS)</value>
+          </Data>
+          <Data name="AUTO-AMPL">
+            <value>ITINERARIO</value>
+          </Data>
+          <Data name="DEFIN-PROV">
+            <value>DEFINITIVOS</value>
+          </Data>
+          <Data name="DURACION">
+            <value>DEFINITIVA</value>
+          </Data>
+          <Data name="FOLIO">
+            <value>SGG/DGT/SDP/001266/97</value>
+          </Data>
+        </ExtendedData>
+        <LineString>
+          <tessellate>1</tessellate>
+          <coordinates>
+-99.1780096,18.6157036,0 -99.1760332,18.6172643,0 -99.1763653,18.6175769,0 -99.1765234,18.6175469,0 -99.1766762,18.617555,0 -99.1783902,18.6180615,0 -99.1819592,18.6189779,0 -99.1820303,18.6184728,0 -99.1826783,18.6160988,0 -99.1836424,18.6163893,0 -99.1849306,18.6167107,0 -99.1868774,18.6172448,0 -99.1882763,18.6175187,0 -99.1902378,18.6177051,0 -99.1911044,18.6178728,0 -99.1914869,18.6181097,0 -99.191712,18.6183697,0 -99.1925598,18.6195974,0 -99.1928524,18.6198988,0 -99.1947794,18.6212627,0 -99.1951966,18.6214703,0 -99.1980597,18.6224971,0 -99.2026001,18.6235094,0 -99.2028503,18.6236162,0 -99.203208,18.6238404,0 -99.2033707,18.6240118,0 -99.2035694,18.6242977,0 -99.2047335,18.6261651,0 -99.2070806,18.6297841,0 -99.2104827,18.6351571,0 -99.2110265,18.6362365,0 -99.2131562,18.6410096,0 -99.2132525,18.6413719,0 -99.214147,18.6433924,0 -99.2141671,18.6434902,0 -99.2141095,18.6436897,0 -99.2140015,18.6438047,0 -99.2138984,18.6438758,0 -99.2137427,18.643894,0 -99.2135144,18.6438678,0 -99.2134028,18.6438196,0 -99.2128222,18.6436967,0 -99.2108106,18.643305,0 -99.2103979,18.6432922,0 -99.210028,18.6433638,0 -99.2097336,18.6434706,0 -99.2042582,18.6461233,0 -99.2040835,18.646245,0 -99.2011705,18.6492739,0 -99.1990844,18.6515255,0 -99.198868,18.6517074,0 -99.1985158,18.6518746,0 -99.197201,18.652171,0 -99.1963948,18.6523018,0 -99.1953565,18.6525163,0 -99.1953528,18.6524638,0 -99.1945003,18.6520808,0 -99.1942008,18.6527301,0 -99.1931906,18.6529423,0 -99.1934747,18.6542376,0 -99.1933439,18.6546119,0 -99.1925186,18.6563793,0 -99.1901924,18.6554277,0 -99.1900493,18.6554202,0 -99.1894772,18.6555372,0 -99.1893669,18.6556299,0 -99.1893098,18.6560373,0 -99.1894479,18.6576201,0 -99.1894365,18.6577223,0 -99.1893563,18.6578575,0 -99.1892197,18.6579541,0 -99.1884798,18.6583334,0 -99.1883025,18.658387,0 -99.186653,18.6584488,0 -99.1861597,18.6609054,0 -99.1859454,18.6620694,0 -99.185784,18.6631506,0 -99.1857742,18.6633994,0 -99.1858004,18.6635401,0 -99.1858907,18.6639149,0 -99.1860529,18.6643334,0 -99.1862323,18.6649375,0 -99.1863335,18.6654078,0 -99.1863372,18.6655677,0 -99.1863099,18.6659283,0 -99.1862125,18.6665069,0 -99.1859258,18.6678885,0 -99.1856445,18.6694534,0 -99.1852147,18.6775944,0 -99.1851617,18.6789158,0 -99.1851597,18.6812207,0 -99.1853416,18.6812307,0 -99.1871742,18.6815893,0 -99.1886178,18.6816085,0 -99.1892939,18.6820155,0 -99.1893734,18.6820386,0 -99.1902126,18.6819224,0 -99.190608,18.6815815,0 -99.1912289,18.6819663,0
+</coordinates>
+        </LineString>
+      </Placemark>
+	<Placemark><name>INICIO</name><description>Avenida Josefa Ortiz de Domínguez, Jojutla</description><styleUrl>#dir-tool-inicio</styleUrl><Point><coordinates>-99.1780096,18.6157036,0</coordinates></Point></Placemark>
+	<Placemark><name>FINAL</name><description>Calle Emiliano Zapata, Zacatepec de Hidalgo, Zacatepec</description><styleUrl>#dir-tool-final</styleUrl><Point><coordinates>-99.1912289,18.6819663,0</coordinates></Point></Placemark>
+</Document>
+</kml>

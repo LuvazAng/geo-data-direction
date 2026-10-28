@@ -1,0 +1,8 @@
+node_modules
+dist
+.centro
+*.tsbuildinfo
+.env
+data/*
+!data/README.md
+public/datos/

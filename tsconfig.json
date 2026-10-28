@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "types": [],
+    "paths": { "@core": ["./src/core/index.ts"], "@protocol": ["./src/protocol/index.ts"] }
+  },
+  "include": ["src/editor", "src/control", "src/core", "src/protocol", "src/App.tsx", "src/main.tsx", "src/vite-env.d.ts", "tools", "vite.config.ts"]
+}

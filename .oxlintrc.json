@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "import", "unicorn", "oxc"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+    "import/no-duplicates": "error",
+    // Reglas pensadas para el compilador de React, que este proyecto no usa: marcan patrones
+    // válidos (actualizar el estado desde un efecto, mostrar la hora actual), no errores.
+    "react/set-state-in-effect": "off",
+    "react/purity": "off",
+    "react/preserve-manual-memoization": "off"
+  },
+  "ignorePatterns": ["dist", "node_modules", "public", "data", "tests/fixtures"]
+}

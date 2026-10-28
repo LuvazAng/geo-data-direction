@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["src/orchestrator", "src/core", "src/protocol", "tests", "tools", "vitest.config.ts"]
+}
